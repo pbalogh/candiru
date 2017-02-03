@@ -1,0 +1,375 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link type="text/css" rel="stylesheet" href="css/style.css">
+    <script src="js/d3.v3.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src="js/d3.layout.js"></script>
+</head>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min'></script>
+<script src="booleanGrammar.js"></script>
+<script src="build/boolius.bundle.js"></script>
+
+<body>
+    <div id="body">
+      <div id="header">
+	    <div class="hint">Click operators to expand or collapse. Click leaf nodes to toggle true/false.</div>
+		<!--<span class="hint">Advanced Condition Logic</span>-->
+        <input type="text" id="statement"></input>
+        <button id="testbutton">Test</button>
+
+      </div>
+	</div>
+    <script type="text/javascript">
+alert("The big insight: use a parseTimeVisitor and an evaluationTimeVisitor for each node.");
+alert("These both are involved with nonterminals");
+alert("And another thing: the parseTIme visitor receives the universal state in which to declare variables;");
+alert("While it's the evaluationTimeVisitor that receives the runtime context (lookup table for truth vars)");
+alert("Get literals into tokenizer and then parse with  http://www.engr.mun.ca/~theo/Misc/exp_parsing.htm");
+alert("And right now we have zero error handling for parsing (though lexing is good)");
+/*
+E --> T {( "+" | "-" ) T}
+    T --> F {( "*" | "/" ) F}
+    F --> P ["^" F]
+    P --> v | "(" E ")" | "-" T
+HOW TO ACCOMPLISH CURLY BRACES: CREATE A FEW EXTRA RULES
+
+F * F becomes F .... THIS ONLY WORKS IF WE RUN THIS RULE ON THE SENTENCE MORE THAN ONCE!
+F / F becomes F .... THIS ONLY WORKS IF WE RUN THIS RULE ON THE SENTENCE MORE THAN ONCE!
+
+later,
+T + T becomes T .... THIS ONLY WORKS IF WE RUN THIS RULE ON THE SENTENCE MORE THAN ONCE!
+T - T becomes T .... THIS ONLY WORKS IF WE RUN THIS RULE ON THE SENTENCE MORE THAN ONCE!
+
+only after we can't match F * F anymore do we go on to
+F becomes T
+
+and if we are at T -> E then we know for damn sure we already matched all our T + T elements.
+
+    */
+var winHeight = Math.max( 600, window.innerHeight );
+var winWidth = Math.max( 1000, window.innerWidth );
+/*
+var m = [100, 120, 20, 120],
+    w = winWidth - m[1] - m[3],
+    h = winHeight - m[0] - m[2],
+    i = 0,
+    root;
+
+var tree = d3.layout.tree()
+    .size([h, w]);
+
+var diagonal = d3.svg.diagonal()
+    .projection(function(d) { return [d.y, d.x]; });
+
+var vis = d3.select("#body").append("svg:svg")
+    .attr("width", w + m[1] + m[3])
+    .attr("height", h + m[0] + m[2])
+  .append("svg:g")
+    .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
+
+vis.append("text")
+	.attr("opacity", .1)
+    .attr("y", 6)
+    .attr("dy", "1.71em")
+    .style("text-anchor", "end")
+    .attr("id", "tooltip")
+    .text("");
+
+vis.append("text")
+	.attr("opacity", 1)
+    .attr("y", 246)
+    .attr("dy", "1.71em")
+    .style("font-size","34px")
+    .style("text-anchor", "end")
+    .attr("id", "result")
+    .text("");
+
+var tokenFactory = new TokenFactory();
+
+var lexer = new Lexer( tokenFactory );
+
+var parser = new Parser();
+
+var grammar = new Grammar();
+
+var visitor = new Visitor();
+
+conditionTruthValues = { a: false, b: true, c: false, d:false, e:false };
+
+d3.select("#testbutton").on("click", function(e) {
+
+	evaluateStatement();
+
+});
+
+function updateWithoutDeleting()
+{
+
+    var statement = d3.select("#statement").property("value");
+
+	if( !statement || statement.length == 0 )
+	{
+		alert("You need to have a statement in the textfield for me to work with.");
+	}
+
+	if( ! parseTree )
+	{
+    	var parseTree = parser.setLexer( lexer ).setGrammar( grammar ).andTokenizeAndParse( statement );
+	}
+
+    var newObject = visitor.visit( parseTree );
+
+    updateObjectAndItsChildren( newObject, root );
+
+	d3.select("#result")
+		.text( root.value )
+}
+
+function updateObjectAndItsChildren( newObjectTemp, rootTemp )
+{
+    //console.log("In updateObjectAndItsChildren, newObjectTemp is " + JSON.stringify( newObjectTemp ));
+    //console.log(" And rootTemp is " + JSON.stringify( rootTemp));
+    rootTemp.value = newObjectTemp.value;
+    if( ! newObjectTemp.children ) return;
+    for( var i = 0; i < newObjectTemp.children.length; i++ )
+    {
+        console.log("i is " + i );
+        console.log("because newObjectTemp.children.length is " + newObjectTemp.children.length + " and its name is " + newObjectTemp.name );
+        if( rootTemp.children )
+        {
+            console.log("and rootTemp.children.length is " + rootTemp.children.length + " and its name is " + rootTemp.name );
+            updateObjectAndItsChildren( newObjectTemp.children[ i ], rootTemp.children[ i ] );
+        }
+        else
+        {
+        	if( rootTemp._children )
+        	{
+            	console.log("and rootTemp._children.length is " + rootTemp._children.length + " and its name is " + rootTemp.name );
+            	updateObjectAndItsChildren( newObjectTemp.children[ i ], rootTemp._children[ i ] );
+            }
+        }
+
+    }
+}
+
+var parseTree;
+
+function evaluateStatement()
+{
+	var statement = d3.select("#statement").property("value");
+
+	parseTree = parser.setLexer( lexer ).setGrammar( grammar ).andTokenizeAndParse( statement );
+
+	parseTree.expressionString = statement;
+
+	console.log( JSON.stringify( visitor.visit( parseTree )));
+
+	displayJSON( visitor.visit( parseTree ) );
+
+};
+
+d3.json("booleanData.json", function( error, json) {
+
+	displayJSON( json );
+} );
+
+function displayJSON( json )
+{
+  root = json;
+  root.x0 = h / 2;
+  root.y0 = 0;
+  //d3.select("#statement").val( root.title );
+  d3.select("#statement").property("value", root.expressionString);
+
+
+  d3.select("#result")
+  .text( root.value )
+
+  function toggleAll(d, delay ) {
+
+  	if( ! delay ) delay = 1;
+
+  	console.log("delay is " + delay );
+
+    if (d.children) {
+
+      //d.children.forEach(toggleAll);
+
+		toggle(d);
+    }
+
+    if (d._children) {
+//      d._children.forEach(toggleAll);
+
+		toggle(d);
+
+    }
+
+
+  }
+  // Initialize the display to show a few nodes.
+  root.children.forEach(toggleAll, 444);
+  //toggle(root.children[1]);
+
+  update(root);
+};
+
+
+
+
+function update(source) {
+  var duration = d3.event && d3.event.altKey ? 5000 : 500;
+
+  // Compute the new tree layout.
+  var nodes = tree.nodes(root).reverse();
+
+
+
+  // Normalize for fixed-depth.
+  // OK -- why is d.y correlated with the horizontal position here???
+
+  widthPerNode = 110;
+  var body = d3.select("body");
+    console.log(body);
+    var svg = body.select("svg");
+    console.log(svg);
+  console.log(svg.style("width"));
+  var widthInPixels = svg.style("width").replace("px", "");
+  console.log("widthInPixels is " + widthInPixels);
+  widthInPixels = parseInt( widthInPixels );
+    console.log("widthInPixels is " + widthInPixels);
+  var widthPerNode = widthInPixels / nodes.length;
+  nodes.forEach(function(d) { d.y = d.depth * widthPerNode; });
+
+  d3.select("#result")
+  .transition()
+  .duration(duration)
+  .attr("x", nodes[nodes.length -1 ].y - 40 )
+  .attr("y", function(d){ return nodes[nodes.length -1 ].x - 48 } )
+
+  // Update the nodes…
+  var node = vis.selectAll("g.node")
+      .data(nodes, function(d) { return d.id || (d.id = ++i); });
+
+  // Enter any new nodes at the parent's previous position.
+  var nodeEnter = node.enter().append("svg:g")
+      .attr("class", "node")
+      .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
+      .on("click", function(d) { toggle(d); update(d); });
+
+  nodeEnter.append("svg:circle")
+      .attr("r", 1e-6)
+      .style("stroke", function(d){ return d.value ? "green" : "red" } )
+      .style("fill", function(d) { return d._children ? "grey" : "#fff"; });
+
+  nodeEnter.append("svg:text")
+      .attr("x", function(d) { return d.children || d._children ? -1 : 17; })
+      .attr("y", function(d) { return d.children || d._children ? 18 : -1; })
+      .attr("dy", ".35em")
+      .attr("text-anchor", "middle")
+//      .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
+      .text(function(d) { return d.name; })
+      .style("fill-opacity", 1e-6);
+
+  // Transition nodes to their new position.
+  var nodeUpdate = node.transition()
+      .duration(duration)
+      .style("stroke", function(d){ return d.value ? "green" : "red" } )
+      .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
+
+  nodeUpdate.select("circle")
+      .attr("r", 8.5)
+      .style("stroke", function(d){ return d.value ? "green" : "red" } )
+      .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+
+  nodeUpdate.select("text")
+      .style("fill-opacity", 1);
+
+  // Transition exiting nodes to the parent's new position.
+  var nodeExit = node.exit().transition()
+      .duration(duration)
+      .attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
+      .remove();
+
+  nodeExit.select("circle")
+      .attr("r", 1e-6);
+
+  nodeExit.select("text")
+      .style("fill-opacity", 1e-6);
+
+  // Update the links…
+  var link = vis.selectAll("path.link")
+      .data(tree.links(nodes), function(d) { return d.target.id; });
+
+  // Enter any new links at the parent's previous position.
+  link.enter().insert("svg:path", "g")
+      .attr("class", "link")
+      .attr("d", function(d) {
+        var o = {x: source.x0, y: source.y0};
+        return diagonal({source: o, target: o});
+      })
+    .transition()
+      .duration(duration)
+      .attr("d", diagonal);
+
+  // Transition links to their new position.
+  link.transition()
+      .duration(duration)
+      .attr("d", diagonal);
+
+  // Transition exiting nodes to the parent's new position.
+  link.exit().transition()
+      .duration(duration)
+      .attr("d", function(d) {
+        var o = {x: source.x, y: source.y};
+        return diagonal({source: o, target: o});
+      })
+      .remove();
+
+  // Stash the old positions for transition.
+  nodes.forEach(function(d) {
+    d.x0 = d.x;
+    d.y0 = d.y;
+  });
+}
+
+// Toggle children.
+function toggle(d) {
+	if( d == undefined ) return;
+  if (d.children) {
+  // hide the children by moving them into _children
+    d._children = d.children;
+    d.children = null;
+  } else {
+  // bring back the hidden children
+    d.children = d._children;
+    d._children = null;
+  }
+
+  if( ! d.children && !d._children) // it's a leaf
+  {
+
+	// toggle true/false
+
+	d.value = !d.value;
+	//var myInt = parseInt( d.name );
+	//conditionTruthValues[ myInt ] = d.value;
+    var myVar = d.name;
+    conditionTruthValues[ myVar ] = d.value;
+
+  	updateWithoutDeleting(root);
+
+  }
+  else
+  {
+  	d3.select("#tooltip").style("opacity", 0 );
+  	d3.select("#tooltipBG").style("opacity", 0 );
+  }
+}
+*/
+
+    </script>
+
+
+</body>
+</html>

@@ -1,0 +1,1 @@
+exports.testGrammar = { "foo" : "bar" }; var foo = "bar";
