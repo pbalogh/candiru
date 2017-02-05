@@ -278,7 +278,7 @@ describe('Parser', () => {
       let matchedSymbols = parseTree[0].seriesOfSymbolsIAbsorbedAndReplaced
       assert( matchedSymbols.length == 3, "And that BOOLEAN should have 3 symbols");
       assert( matchedSymbols[0].type == "BOOLEAN", "The first matched symbol should be a BOOLEAN");
-      assert( matchedSymbols[1].type == "&", "The second matched symbol should be & but is " + matchedSymbols[1].type);
+      assert( matchedSymbols[1].type == "|", "The second matched symbol should be | but is " + matchedSymbols[1].type);
       assert( matchedSymbols[2].type == "BOOLEAN", "The third matched symbol should be a BOOLEAN");
       let visitor = new EvaluationVisitor();
       let result = parseTree[0].visit( visitor );
@@ -334,11 +334,9 @@ describe('Parser', () => {
     it('should evaluate statement with 9 boolean variables', () => {
       let sentenceOfTokens = lexer.tokenize( "((a || b) && (c || d || e || f) && (g || h ) && i)" );
       assert( sentenceOfTokens.length == 25, "length of sentenceOfTokens should be 25 but is " + sentenceOfTokens.length );
-      console.error("state is " + JSON.stringify( state ) );
       state = {"a":false,"b":false,"c":false,"d":false,"e":false,"f":false,"g":false,"h":false,"i":false};
       parser.setState( state );
       let parseTree = parser.parse( sentenceOfTokens );
-      console.log("SUCCESSFULLY PARSED");
       let visitor = new EvaluationVisitor( state );
       let result = parseTree[0].visit( visitor );
       assert( result == false, "The evaluation of that tree should be false but is " + result);
@@ -347,13 +345,9 @@ describe('Parser', () => {
     it('should evaluate statement with variables and keywords', () => {
       let sentenceOfTokens = lexer.tokenize( "(NOT ( a ))" );
       assert( sentenceOfTokens.length == 6, "length of sentenceOfTokens should be 6 but is " + sentenceOfTokens.length );
-      console.error("state is " + JSON.stringify( state ) );
-      console.error("sentenceOfTokens is " + sentenceOfTokens );
       state["a"] = false;
       parser.setState( state );
-      console.log("About to parse");
       let parseTree = parser.parse( sentenceOfTokens );
-      console.log("SUCCESSFULLY PARSED");
       let visitor = new EvaluationVisitor( state );
       let result = parseTree[0].visit( visitor );
       assert( result == true, "The evaluation of that tree should be true but is " + result);
@@ -363,12 +357,8 @@ describe('Parser', () => {
     it('should evaluate statement with variables and keywords', () => {
       let sentenceOfTokens = lexer.tokenize( "(NOT ( a AND  b))" );
       assert( sentenceOfTokens.length == 8, "length of sentenceOfTokens should be 8 but is " + sentenceOfTokens.length );
-      console.error("state is " + JSON.stringify( state ) );
-      console.error("sentenceOfTokens is " + sentenceOfTokens );
       parser.setState( state );
-      console.log("About to parse");
       let parseTree = parser.parse( sentenceOfTokens );
-      console.log("SUCCESSFULLY PARSED");
       let visitor = new EvaluationVisitor( state );
       let result = parseTree[0].visit( visitor );
       assert( result == true, "The evaluation of that tree should be true but is " + result);
@@ -379,18 +369,14 @@ describe('Parser', () => {
     state.a = false;
     state.b = false;
     state.c = true;
-    console.error("state is " + JSON.stringify( state ) );
     parser.setState( state );
-    console.log("About to parse");
     let parseTree = parser.parse( sentenceOfTokens );
-    console.log("SUCCESSFULLY PARSED");
-    console.log("parseTree is " + parseTree.toString() );
     let visitor = new EvaluationVisitor( state );
     let result = parseTree[0].visit( visitor );
     assert( result == true, "The evaluation of that tree should be true but is " + result);
   });
 
-  it.only('should run through battery of booleanTestingStatements', () => {
+  it('should run through battery of booleanTestingStatements', ( done ) => {
       // we need a global context defining all variables as booleans
       // so that the parser will know what type they are.
 
@@ -398,7 +384,6 @@ describe('Parser', () => {
       let numberOfStatementsEvaluated = 0;
       for( var booleanTestingStatement of booleanTestingStatements ){
         let numberOfVars = getNumberOfVariablesInStatement( booleanTestingStatement );
-        //console.log("booleanTestingStatement " + booleanTestingStatement + " has " + numberOfVars + " vars ");
         let truthtablesForThisTest = truthtables[ numberOfVars ];
         let sentenceOfTokens = lexer.tokenize( booleanTestingStatement );
         parser.setState( state );
@@ -406,31 +391,28 @@ describe('Parser', () => {
 
         for( var truthtable of truthtablesForThisTest )
         {
-          //console.log("truthtable is " + JSON.stringify( truthtable ));
           numberOfStatementsEvaluated++;
           visitor.setState( truthtable );
           let result = parseTree[0].visit( visitor );
           let testStatement = "";
           for( var varname in truthtable )
           {
-            //console.log("varname is " + varname );
             if( varname.length > 0 )
             {
                 testStatement += "var " + varname + " = " + truthtable[varname] + ";";
             }
           }
-          //console.log( eval("var state = " + JSON.stringify( truthtable )) );
           booleanTestingStatement = booleanTestingStatement.replace(/AND/ig, "&&" );
           booleanTestingStatement = booleanTestingStatement.replace(/OR/ig, "||" );
           booleanTestingStatement = booleanTestingStatement.replace(/NOT/ig, "!" );
           booleanTestingStatement = booleanTestingStatement.replace(/XOR/ig, "^" );
           testStatement += "if( " + result + " != (" + booleanTestingStatement + ")) { throw new Error('mismatch'); }";
-          //console.log("testStatement is " + testStatement );
           eval( testStatement );
         }
       }
       console.log("# of statements parsed: " + booleanTestingStatements.length );
       console.log("numberOfStatementsEvaluated is " + numberOfStatementsEvaluated );
+      done()
     });
 
   });

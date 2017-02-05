@@ -12,7 +12,7 @@
     },
     "babel2": "babel --presets es2015 js/boolius.js -o build/boolius.bundle.js",
     "test": "mocha --compilers js:babel-core/register test/*Spec.js",
-    "watch": "onchange 'js/*.js' -- npm run webpack",
+    "watch": "onchange 'js/**.js' -- npm run webpack",
     "start": "http-server"
   },
   "author": "",

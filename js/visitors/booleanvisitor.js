@@ -7,6 +7,7 @@ class BooleanVisitor{
   setState( newstate ){
     this.state = newstate;
   }
+
   execute( nonterminalOrToken ){
     if(nonterminalOrToken.constructor.name == "Nonterminal" )
     {

@@ -5,8 +5,6 @@
     <script src="js/d3.v3.min.js" charset="utf-8"></script>
     <script type="text/javascript" src="js/d3.layout.js"></script>
 </head>
-<script src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min'></script>
-<script src="booleanGrammar.js"></script>
 <script src="build/boolius.bundle.js"></script>
 
 <body>
@@ -14,41 +12,16 @@
       <div id="header">
 	    <div class="hint">Click operators to expand or collapse. Click leaf nodes to toggle true/false.</div>
 		<!--<span class="hint">Advanced Condition Logic</span>-->
-        <input type="text" id="statement"></input>
+        <input type="text" id="statement" value='((d && c)) || (!b && a) && (!d || !a) && (!c || !b)'></input>
         <button id="testbutton">Test</button>
 
       </div>
 	</div>
     <script type="text/javascript">
-alert("The big insight: use a parseTimeVisitor and an evaluationTimeVisitor for each node.");
-alert("These both are involved with nonterminals");
-alert("And another thing: the parseTIme visitor receives the universal state in which to declare variables;");
-alert("While it's the evaluationTimeVisitor that receives the runtime context (lookup table for truth vars)");
-alert("Get literals into tokenizer and then parse with  http://www.engr.mun.ca/~theo/Misc/exp_parsing.htm");
-alert("And right now we have zero error handling for parsing (though lexing is good)");
-/*
-E --> T {( "+" | "-" ) T}
-    T --> F {( "*" | "/" ) F}
-    F --> P ["^" F]
-    P --> v | "(" E ")" | "-" T
-HOW TO ACCOMPLISH CURLY BRACES: CREATE A FEW EXTRA RULES
 
-F * F becomes F .... THIS ONLY WORKS IF WE RUN THIS RULE ON THE SENTENCE MORE THAN ONCE!
-F / F becomes F .... THIS ONLY WORKS IF WE RUN THIS RULE ON THE SENTENCE MORE THAN ONCE!
-
-later,
-T + T becomes T .... THIS ONLY WORKS IF WE RUN THIS RULE ON THE SENTENCE MORE THAN ONCE!
-T - T becomes T .... THIS ONLY WORKS IF WE RUN THIS RULE ON THE SENTENCE MORE THAN ONCE!
-
-only after we can't match F * F anymore do we go on to
-F becomes T
-
-and if we are at T -> E then we know for damn sure we already matched all our T + T elements.
-
-    */
 var winHeight = Math.max( 600, window.innerHeight );
 var winWidth = Math.max( 1000, window.innerWidth );
-/*
+var boolius = new Boolius();
 var m = [100, 120, 20, 120],
     w = winWidth - m[1] - m[3],
     h = winHeight - m[0] - m[2],
@@ -84,23 +57,89 @@ vis.append("text")
     .attr("id", "result")
     .text("");
 
-var tokenFactory = new TokenFactory();
-
-var lexer = new Lexer( tokenFactory );
-
-var parser = new Parser();
-
-var grammar = new Grammar();
-
-var visitor = new Visitor();
-
-conditionTruthValues = { a: false, b: true, c: false, d:false, e:false };
+evaluateStatement();
 
 d3.select("#testbutton").on("click", function(e) {
 
 	evaluateStatement();
 
 });
+
+var parseTree;
+
+function evaluateStatement()
+{
+    var statement = d3.select("#statement").node().value;
+	parseTree = boolius.parse( statement );
+	displayJSON( parseTree );
+
+};
+
+function displayJSON( json )
+{
+  root = json;
+  root.x0 = h / 2;
+  root.y0 = 0;
+  //d3.select("#statement").val( root.title );
+  d3.select("#statement").property("value", root.expressionString);
+
+  d3.select("#result")
+  .text( root.value )
+
+  function toggleAll(d, delay ) {
+
+  	if( ! delay ) delay = 1;
+
+    if (d.children) {
+		toggle(d);
+    }
+
+    if (d._children) {
+		toggle(d);
+    }
+  }
+  // Initialize the display to show a few nodes.
+
+  root.children.forEach(toggleAll, 444);
+  //toggle(root.children[1]);
+
+  update(root);
+};
+
+// Toggle children.
+function toggle(d) {
+	if( d == undefined ) return;
+  if (d.children) {
+  // hide the children by moving them into _children
+    d._children = d.children;
+    d.children = null;
+  } else {
+  // bring back the hidden children
+    d.children = d._children;
+    d._children = null;
+  }
+
+  if( ! d.children && !d._children) // it's a leaf
+  {
+	// toggle true/false
+
+	d.value = !d.value;
+	//var myInt = parseInt( d.name );
+	//conditionTruthValues[ myInt ] = d.value;
+    var myVar = d.name;
+    boolius.state[ myVar ] = d.value;
+
+  	updateWithoutDeleting(root);
+
+  }
+  else
+  {
+  	d3.select("#tooltip").style("opacity", 0 );
+  	d3.select("#tooltipBG").style("opacity", 0 );
+  }
+}
+
+
 
 function updateWithoutDeleting()
 {
@@ -112,14 +151,9 @@ function updateWithoutDeleting()
 		alert("You need to have a statement in the textfield for me to work with.");
 	}
 
-	if( ! parseTree )
-	{
-    	var parseTree = parser.setLexer( lexer ).setGrammar( grammar ).andTokenizeAndParse( statement );
-	}
+    parseTree = boolius.evaluateParseTree();
 
-    var newObject = visitor.visit( parseTree );
-
-    updateObjectAndItsChildren( newObject, root );
+    updateObjectAndItsChildren( parseTree, root );
 
 	d3.select("#result")
 		.text( root.value )
@@ -127,93 +161,25 @@ function updateWithoutDeleting()
 
 function updateObjectAndItsChildren( newObjectTemp, rootTemp )
 {
-    //console.log("In updateObjectAndItsChildren, newObjectTemp is " + JSON.stringify( newObjectTemp ));
-    //console.log(" And rootTemp is " + JSON.stringify( rootTemp));
+
     rootTemp.value = newObjectTemp.value;
     if( ! newObjectTemp.children ) return;
     for( var i = 0; i < newObjectTemp.children.length; i++ )
     {
-        console.log("i is " + i );
-        console.log("because newObjectTemp.children.length is " + newObjectTemp.children.length + " and its name is " + newObjectTemp.name );
         if( rootTemp.children )
         {
-            console.log("and rootTemp.children.length is " + rootTemp.children.length + " and its name is " + rootTemp.name );
             updateObjectAndItsChildren( newObjectTemp.children[ i ], rootTemp.children[ i ] );
         }
         else
         {
         	if( rootTemp._children )
         	{
-            	console.log("and rootTemp._children.length is " + rootTemp._children.length + " and its name is " + rootTemp.name );
             	updateObjectAndItsChildren( newObjectTemp.children[ i ], rootTemp._children[ i ] );
             }
         }
 
     }
 }
-
-var parseTree;
-
-function evaluateStatement()
-{
-	var statement = d3.select("#statement").property("value");
-
-	parseTree = parser.setLexer( lexer ).setGrammar( grammar ).andTokenizeAndParse( statement );
-
-	parseTree.expressionString = statement;
-
-	console.log( JSON.stringify( visitor.visit( parseTree )));
-
-	displayJSON( visitor.visit( parseTree ) );
-
-};
-
-d3.json("booleanData.json", function( error, json) {
-
-	displayJSON( json );
-} );
-
-function displayJSON( json )
-{
-  root = json;
-  root.x0 = h / 2;
-  root.y0 = 0;
-  //d3.select("#statement").val( root.title );
-  d3.select("#statement").property("value", root.expressionString);
-
-
-  d3.select("#result")
-  .text( root.value )
-
-  function toggleAll(d, delay ) {
-
-  	if( ! delay ) delay = 1;
-
-  	console.log("delay is " + delay );
-
-    if (d.children) {
-
-      //d.children.forEach(toggleAll);
-
-		toggle(d);
-    }
-
-    if (d._children) {
-//      d._children.forEach(toggleAll);
-
-		toggle(d);
-
-    }
-
-
-  }
-  // Initialize the display to show a few nodes.
-  root.children.forEach(toggleAll, 444);
-  //toggle(root.children[1]);
-
-  update(root);
-};
-
 
 
 
@@ -230,14 +196,9 @@ function update(source) {
 
   widthPerNode = 110;
   var body = d3.select("body");
-    console.log(body);
-    var svg = body.select("svg");
-    console.log(svg);
-  console.log(svg.style("width"));
+  var svg = body.select("svg");
   var widthInPixels = svg.style("width").replace("px", "");
-  console.log("widthInPixels is " + widthInPixels);
   widthInPixels = parseInt( widthInPixels );
-    console.log("widthInPixels is " + widthInPixels);
   var widthPerNode = widthInPixels / nodes.length;
   nodes.forEach(function(d) { d.y = d.depth * widthPerNode; });
 
@@ -274,7 +235,7 @@ function update(source) {
   // Transition nodes to their new position.
   var nodeUpdate = node.transition()
       .duration(duration)
-      .style("stroke", function(d){ return d.value ? "green" : "red" } )
+      .style("stroke", function(d){ return d.value ? "green" : "red";  } )
       .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
 
   nodeUpdate.select("circle")
@@ -333,40 +294,6 @@ function update(source) {
   });
 }
 
-// Toggle children.
-function toggle(d) {
-	if( d == undefined ) return;
-  if (d.children) {
-  // hide the children by moving them into _children
-    d._children = d.children;
-    d.children = null;
-  } else {
-  // bring back the hidden children
-    d.children = d._children;
-    d._children = null;
-  }
-
-  if( ! d.children && !d._children) // it's a leaf
-  {
-
-	// toggle true/false
-
-	d.value = !d.value;
-	//var myInt = parseInt( d.name );
-	//conditionTruthValues[ myInt ] = d.value;
-    var myVar = d.name;
-    conditionTruthValues[ myVar ] = d.value;
-
-  	updateWithoutDeleting(root);
-
-  }
-  else
-  {
-  	d3.select("#tooltip").style("opacity", 0 );
-  	d3.select("#tooltipBG").style("opacity", 0 );
-  }
-}
-*/
 
     </script>
 
