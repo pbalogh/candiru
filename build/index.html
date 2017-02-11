@@ -195,9 +195,18 @@ function toggle(d, showOverlay) {
 
                 showValueOverlay( "Attributes: " + attributeText + "</br>Content: " + d.value );
             }
-            else
+            else//oops, we wanted to collapse this thing
             {
-                showValueOverlay( "Attributes: " + attributeText + "</br>Content: " + d.value );
+                //showValueOverlay( "Attributes: " + attributeText + "</br>Content: " + d.value );
+                if (d.children) {
+                // hide the children by moving them into _children
+                    d._children = d.children;
+                    d.children = null;
+                } else {
+                // bring back the hidden children
+                    d.children = d._children;
+                    d._children = null;
+                }
             }
         }
     }
