@@ -8,4 +8,5 @@ Right now, the only way to see it in action is to run 'npm test'.
 ## Next steps: 
   - Integrating with D3 to create a nice visualization of parse trees that lets you toggle true/false values
   - New visitor classes that allow contextual parsing (i.e., XML)
+  - Error handling for parse errors (lexing errors are already caught)
   
