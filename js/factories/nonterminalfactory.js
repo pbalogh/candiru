@@ -6,7 +6,6 @@ export default class NonterminalFactory{
     this.nonterminals = [];
     for( let grammarRule of grammarObject )
     {
-      console.error("grammarRule is " + JSON.stringify( grammarRule ));
       let nonterminal = new Nonterminal( grammarRule[0], grammarRule[1] );
       if( grammarRule.length > 2 ) // it has an array of lookaheadTokensToAvoid
       {

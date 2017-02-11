@@ -1,0 +1,20 @@
+{
+  "name": "friendlyquestions",
+  "description": "",
+  "main": "build/js/app.js",
+  "authors": [
+    "Peter Balogh <peter.a.balogh@ibm.com>"
+  ],
+  "license": "ISC",
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "chosen": "^1.6.2"
+  }
+}

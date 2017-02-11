@@ -10,9 +10,8 @@
         "es2015"
       ]
     },
-    "babel2": "babel --presets es2015 js/boolius.js -o build/boolius.bundle.js",
     "test": "mocha --compilers js:babel-core/register test/*Spec.js",
-    "watch": "onchange 'js/*.js' -- npm run webpack",
+    "watch": "onchange 'js/**.js' -- npm run webpack",
     "start": "http-server"
   },
   "author": "",
@@ -22,6 +21,7 @@
     "babel-core": "latest",
     "babel-loader": "latest",
     "babel-preset-es2015": "latest",
+    "bower": "^1.8.0",
     "chai": "latest",
     "http-server": "latest",
     "jquery": "latest",

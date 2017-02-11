@@ -5,8 +5,11 @@ import Lexer from '../js/lexer';
 import TokenFactory from '../js/factories/tokenfactory';
 import NonterminalFactory from '../js/factories/nonterminalfactory';
 import EvaluationVisitor from '../js/visitors/evaluationvisitor';
+import XMLParseTimeVisitor from '../js/visitors/xmlparsetimevisitor';
+import XMLJSONVisitor from '../js/visitors/xmljsonvisitor';
+
+
 import booleanTestingStatements from './tests';
-import testGrammar from './testGrammar';
 
 var assert = require('assert');
 var chai = require('chai');
@@ -198,37 +201,63 @@ describe('NonterminalFactory', () => {
 });
 
 describe('Parser', () => {
+  let grammarObject, state, tokenFactory, tokens, nonterminalFactory, nonterminals, lexer, parser;
+  let IGNORE = true;
+
+  let tokenDefinitions = [
+        [ /\s+/, "", IGNORE ], // ignore whitespace
+        [ /&&/, "&" ],
+        [ /AND/i, "&" ],
+        [ /\|\|/, "|" ], // this is the escaped form of ||
+        [ /XOR/i, "^" ],
+        [ /OR/i, "|" ],
+        [ /\^/, "^" ], // this is the escaped form of ^
+        [ /\!/, "!" ], // this is the escaped form of !
+        [ /NOT/i, "!" ],
+        [ /\(/, "(" ],
+        [ /\)/, ")" ],
+        [ /\+/, "+" ],
+        [ /-/, "-" ],
+        [ /\*/, "*" ],
+        [ /\//, "/" ],
+        [ /(true)(?![a-zA-Z0-9])/i, "TRUE" ],
+        [ /(false)(?![a-zA-Z0-9])/i, "FALSE" ],
+        [ /[-+]?[0-9]*\.?[0-9]+/, "NUM_LIT" ], // second arg is how this token will present itself to the parser.
+        [ /[a-zA-Z]+/, "IDENT" ] // second arg is how this token will present itself to the parser.
+      ];
+
   describe('Is handed a grammar', () => {
 
-    let grammarObject = [
-      [  ["NOT", "FOO", "NOT" ], "NOTFOONOT" ],
-      [  ["FOO", "FOO" ], "FOOFOO" ],
-      [  ["TRUE" ], "BOOLEAN" ],
-      [  ["FALSE" ], "BOOLEAN" ],
-      [  ["!", "BOOLEAN" ], "BOOLEAN" ],
-      [  ["BOOLEAN", "&", "BOOLEAN" ], "BOOLEAN" ],
-      [  ["BOOLEAN", "|", "BOOLEAN" ], "BOOLEAN" ],
-      [  ["(", "BOOLEAN", ")" ], "BOOLEAN" ],
-      [  ["NUMERIC", "^", "NUMERIC" ], "NUMERIC" ],
-      [  ["NUMERIC", "*", "NUMERIC" ], "NUMERIC" ],
-      [  ["NUMERIC", "+", "NUMERIC" ], "NUMERIC", ["*", "/", "^"] ],
-      [  ["NUMERIC", "-", "NUMERIC" ], "NUMERIC", ["*", "/", "^"] ],
-      [  ["NUM_LIT" ], "NUMERIC" ],
-      [  ["(", "NUMERIC", ")" ], "NUMERIC" ]
-    ];
+    before( () => {
 
-    let state = {"a":false,"b":false,"c":false,"d":false,"e":false,"f":false,"g":false,"h":false,"i":false};
+      grammarObject = [
+        [  ["NOT", "FOO", "NOT" ], "NOTFOONOT" ],
+        [  ["FOO", "FOO" ], "FOOFOO" ],
+        [  ["TRUE" ], "BOOLEAN" ],
+        [  ["FALSE" ], "BOOLEAN" ],
+        [  ["!", "BOOLEAN" ], "BOOLEAN" ],
+        [  ["BOOLEAN", "&", "BOOLEAN" ], "BOOLEAN" ],
+        [  ["BOOLEAN", "|", "BOOLEAN" ], "BOOLEAN" ],
+        [  ["(", "BOOLEAN", ")" ], "BOOLEAN" ],
+        [  ["NUMERIC", "^", "NUMERIC" ], "NUMERIC" ],
+        [  ["NUMERIC", "*", "NUMERIC" ], "NUMERIC" ],
+        [  ["NUMERIC", "+", "NUMERIC" ], "NUMERIC", ["*", "/", "^"] ],
+        [  ["NUMERIC", "-", "NUMERIC" ], "NUMERIC", ["*", "/", "^"] ],
+        [  ["NUM_LIT" ], "NUMERIC" ],
+        [  ["(", "NUMERIC", ")" ], "NUMERIC" ]
+      ];
 
-    // the optional third element in each row of our grammar object
-    // is an array of lookahead dealbreakers.
-    // In other words, if you see this up ahead, then you can't match.
 
-    let tokenFactory = new TokenFactory();
-    let tokens = tokenFactory.getTokens();
-    let nonterminalFactory = new NonterminalFactory( grammarObject );
-    let nonterminals = nonterminalFactory.getNonterminals();
-    let lexer = new Lexer( tokens );
-    let parser = new Parser( nonterminals );
+      state = {"a":false,"b":false,"c":false,"d":false,"e":false,"f":false,"g":false,"h":false,"i":false};
+
+      // the optional third element in each row of our grammar object
+      // is an array of lookahead dealbreakers.
+      // In other words, if you see this up ahead, then you can't match.
+
+      lexer = new Lexer( tokenDefinitions );
+      parser = new Parser( grammarObject );
+
+    });
 
     it('new parser should accept a lexer and grammar and use them to tokenize and parse', () => {
 
@@ -278,7 +307,7 @@ describe('Parser', () => {
       let matchedSymbols = parseTree[0].seriesOfSymbolsIAbsorbedAndReplaced
       assert( matchedSymbols.length == 3, "And that BOOLEAN should have 3 symbols");
       assert( matchedSymbols[0].type == "BOOLEAN", "The first matched symbol should be a BOOLEAN");
-      assert( matchedSymbols[1].type == "&", "The second matched symbol should be & but is " + matchedSymbols[1].type);
+      assert( matchedSymbols[1].type == "|", "The second matched symbol should be | but is " + matchedSymbols[1].type);
       assert( matchedSymbols[2].type == "BOOLEAN", "The third matched symbol should be a BOOLEAN");
       let visitor = new EvaluationVisitor();
       let result = parseTree[0].visit( visitor );
@@ -334,11 +363,9 @@ describe('Parser', () => {
     it('should evaluate statement with 9 boolean variables', () => {
       let sentenceOfTokens = lexer.tokenize( "((a || b) && (c || d || e || f) && (g || h ) && i)" );
       assert( sentenceOfTokens.length == 25, "length of sentenceOfTokens should be 25 but is " + sentenceOfTokens.length );
-      console.error("state is " + JSON.stringify( state ) );
       state = {"a":false,"b":false,"c":false,"d":false,"e":false,"f":false,"g":false,"h":false,"i":false};
       parser.setState( state );
       let parseTree = parser.parse( sentenceOfTokens );
-      console.log("SUCCESSFULLY PARSED");
       let visitor = new EvaluationVisitor( state );
       let result = parseTree[0].visit( visitor );
       assert( result == false, "The evaluation of that tree should be false but is " + result);
@@ -347,13 +374,9 @@ describe('Parser', () => {
     it('should evaluate statement with variables and keywords', () => {
       let sentenceOfTokens = lexer.tokenize( "(NOT ( a ))" );
       assert( sentenceOfTokens.length == 6, "length of sentenceOfTokens should be 6 but is " + sentenceOfTokens.length );
-      console.error("state is " + JSON.stringify( state ) );
-      console.error("sentenceOfTokens is " + sentenceOfTokens );
       state["a"] = false;
       parser.setState( state );
-      console.log("About to parse");
       let parseTree = parser.parse( sentenceOfTokens );
-      console.log("SUCCESSFULLY PARSED");
       let visitor = new EvaluationVisitor( state );
       let result = parseTree[0].visit( visitor );
       assert( result == true, "The evaluation of that tree should be true but is " + result);
@@ -363,12 +386,8 @@ describe('Parser', () => {
     it('should evaluate statement with variables and keywords', () => {
       let sentenceOfTokens = lexer.tokenize( "(NOT ( a AND  b))" );
       assert( sentenceOfTokens.length == 8, "length of sentenceOfTokens should be 8 but is " + sentenceOfTokens.length );
-      console.error("state is " + JSON.stringify( state ) );
-      console.error("sentenceOfTokens is " + sentenceOfTokens );
       parser.setState( state );
-      console.log("About to parse");
       let parseTree = parser.parse( sentenceOfTokens );
-      console.log("SUCCESSFULLY PARSED");
       let visitor = new EvaluationVisitor( state );
       let result = parseTree[0].visit( visitor );
       assert( result == true, "The evaluation of that tree should be true but is " + result);
@@ -379,18 +398,14 @@ describe('Parser', () => {
     state.a = false;
     state.b = false;
     state.c = true;
-    console.error("state is " + JSON.stringify( state ) );
     parser.setState( state );
-    console.log("About to parse");
     let parseTree = parser.parse( sentenceOfTokens );
-    console.log("SUCCESSFULLY PARSED");
-    console.log("parseTree is " + parseTree.toString() );
     let visitor = new EvaluationVisitor( state );
     let result = parseTree[0].visit( visitor );
     assert( result == true, "The evaluation of that tree should be true but is " + result);
   });
 
-  it.only('should run through battery of booleanTestingStatements', () => {
+  it('should run through battery of booleanTestingStatements', ( done ) => {
       // we need a global context defining all variables as booleans
       // so that the parser will know what type they are.
 
@@ -398,7 +413,6 @@ describe('Parser', () => {
       let numberOfStatementsEvaluated = 0;
       for( var booleanTestingStatement of booleanTestingStatements ){
         let numberOfVars = getNumberOfVariablesInStatement( booleanTestingStatement );
-        //console.log("booleanTestingStatement " + booleanTestingStatement + " has " + numberOfVars + " vars ");
         let truthtablesForThisTest = truthtables[ numberOfVars ];
         let sentenceOfTokens = lexer.tokenize( booleanTestingStatement );
         parser.setState( state );
@@ -406,32 +420,195 @@ describe('Parser', () => {
 
         for( var truthtable of truthtablesForThisTest )
         {
-          //console.log("truthtable is " + JSON.stringify( truthtable ));
           numberOfStatementsEvaluated++;
           visitor.setState( truthtable );
           let result = parseTree[0].visit( visitor );
           let testStatement = "";
           for( var varname in truthtable )
           {
-            //console.log("varname is " + varname );
             if( varname.length > 0 )
             {
                 testStatement += "var " + varname + " = " + truthtable[varname] + ";";
             }
           }
-          //console.log( eval("var state = " + JSON.stringify( truthtable )) );
           booleanTestingStatement = booleanTestingStatement.replace(/AND/ig, "&&" );
           booleanTestingStatement = booleanTestingStatement.replace(/OR/ig, "||" );
           booleanTestingStatement = booleanTestingStatement.replace(/NOT/ig, "!" );
           booleanTestingStatement = booleanTestingStatement.replace(/XOR/ig, "^" );
           testStatement += "if( " + result + " != (" + booleanTestingStatement + ")) { throw new Error('mismatch'); }";
-          //console.log("testStatement is " + testStatement );
           eval( testStatement );
         }
       }
       console.log("# of statements parsed: " + booleanTestingStatements.length );
       console.log("numberOfStatementsEvaluated is " + numberOfStatementsEvaluated );
+      done()
     });
 
   });
+
+  describe('Should handle XML parsing', () => {
+
+    // new star of the show
+    let xmlParseTimeVisitor = new XMLParseTimeVisitor();
+
+    let xmlJSONVisitor = new XMLJSONVisitor();
+
+    let visitor = new EvaluationVisitor();
+    
+    let IGNORE = true;
+
+    before( () => {
+      let grammarObject = [
+        [  ["OPENCOMMENT", "WILDCARD", "CLOSECOMMENT" ], "COMMENT" ],
+        [  ["<", "/", "IDENT", ">" ], "CLOSETAG" ],
+        [  ["<", "IDENT", ">" ], "OPENTAG" ],
+        [  ["<", "IDENT", "/", ">" ], "XMLNODE" ],
+        [  ["<", "IDENT", "IDENT", "=", "\"", "WILDCARD", "\"" ], "OPENTAGSTART" ],
+        /* Some recursive self-nesting here */
+        [  ["OPENTAGSTART", "IDENT", "=", "\"", "WILDCARD", "\"" ], "OPENTAGSTART" ],
+        [  ["OPENTAGSTART", ">"], "OPENTAG" ],
+        [  ["OPENTAG", "CLOSETAG" ], "XMLNODE" ],
+        [  ["OPENTAG", "WILDCARD", "CLOSETAG" ], "XMLNODE" ]
+      ];
+
+
+      let tokenDefinitions = [
+        [  /\s+/, "", IGNORE ],
+        [  /<!--/, 'OPENCOMMENT' ],
+        [  /-->/, 'CLOSECOMMENT' ],
+        [  /\//, "/" ],
+        [  />/, ">" ],
+        [  /</, "<" ],
+        [  /=/, "=" ],
+        [  /"/, '"' ],
+        [  /'/, '"' ],
+        [  /[-+]?[0-9]*\.?[0-9]+/, "NUM_LIT" ],
+        [  /[a-zA-Z]+/, "IDENT" ],
+        [ /[^<]+/, "DIRTYTEXT"]
+      ];
+      lexer = new Lexer( tokenDefinitions );
+      parser = new Parser( grammarObject );
+      state = {};
+      parser.setState( state );
+    });
+
+    it('should create correct tokens for XML', () => {
+      let sentenceOfTokens = lexer.tokenize( "<tag></tag>" );
+      assert( sentenceOfTokens.length == 7, "sentenceOfTokens.length should be 7 but is " + sentenceOfTokens.length );
+      assert( sentenceOfTokens[0].type  == "<", "sentenceOfTokens[0].type should be '<' but is " + sentenceOfTokens[0].type );
+      assert( sentenceOfTokens[1].type  == "IDENT", "sentenceOfTokens[1].type should be 'IDENT' but is " + sentenceOfTokens[1].type );
+      assert( sentenceOfTokens[2].type  == ">", "sentenceOfTokens[2].type should be '>' but is " + sentenceOfTokens[2].type );
+      assert( sentenceOfTokens[3].type  == "<", "sentenceOfTokens[3].type should be '<' but is " + sentenceOfTokens[3].type );
+      assert( sentenceOfTokens[4].type  == "/", "sentenceOfTokens[4].type should be '/' but is " + sentenceOfTokens[4].type );
+    });
+
+    it('should create correct nonterminals', () => {
+      let sentenceOfTokens = lexer.tokenize( "<tag></tag>" );
+      parser.setState( state );
+      let parseTree = parser.parse( sentenceOfTokens, xmlParseTimeVisitor );
+      let result = parseTree[0].visit( visitor );
+      assert( parseTree[0].type  == "XMLNODE", "parseTree[0].type should be 'XMLNODE' but is " + parseTree[0].type );
+      let children = parseTree[0].seriesOfSymbolsIAbsorbedAndReplaced;
+      assert( children[0].type  == "OPENTAG", "children[0].type should be 'OPENTAG' but is " + children[0].type );
+      assert( children[1].type  == "CLOSETAG", "children[1].type should be 'CLOSETAG' but is " + children[1].type );
+    });
+
+    it('should handle both content and comments', () => {
+      let sentenceOfTokens = lexer.tokenize( "<tag>text <!-- this is a comment --></tag>" );
+      parser.setState( state );
+      let parseTree = parser.parse( sentenceOfTokens, xmlParseTimeVisitor );
+      let result = parseTree[0].visit( visitor );
+      assert( parseTree[0].type  == "XMLNODE", "parseTree[0].type should be 'XMLNODE' but is " + parseTree[0].type );
+    });
+
+    it('should handle complex nesting', () => {
+      let complexSentence = "<top><simpleChildNode></simpleChildNode><complexNode><simpleChildNode></simpleChildNode><simpleChildNode></simpleChildNode></complexNode></top>";
+      let sentenceOfTokens = lexer.tokenize( complexSentence );
+      let parseTree = parser.parse( sentenceOfTokens, xmlParseTimeVisitor );
+      let result = parseTree[0].visit( visitor );
+      assert( parseTree[0].type  == "XMLNODE", "parseTree[0].type should be 'XMLNODE' but is " + parseTree[0].type );
+
+    });
+
+    it('should handle simple opening tags with attributes', () => {
+      let sentenceOfTokens = lexer.tokenize( "<tag foo='bar'></tag>" );
+      parser.setState( state );
+      let parseTree = parser.parse( sentenceOfTokens, xmlParseTimeVisitor );
+      assert( parseTree[0].type  == "XMLNODE", "parseTree[0].type should be 'XMLNODE' but is " + parseTree[0].type );
+      let json = parseTree[0].visit( xmlJSONVisitor );
+      assert( json.name == "tag" );
+      assert( json.attributes.foo == "bar", "json.attributes.foo should be 'bar' but is " + json.attributes.foo );
+    });
+
+    it('should handle simple opening tags with two attributes', () => {
+      let sentenceOfTokens = lexer.tokenize( "<tag foo='bar' baz='bang'></tag>" );
+      parser.setState( state );
+      let parseTree = parser.parse( sentenceOfTokens, xmlParseTimeVisitor );
+      assert( parseTree[0].type  == "XMLNODE", "parseTree[0].type should be 'XMLNODE' but is " + parseTree[0].type );
+       let json = parseTree[0].visit( xmlJSONVisitor );
+      assert( json.name == "tag", "json.name should be tag but is " + json.name );
+      assert( json.attributes.foo == "bar", "json.attributes.foo should be 'bar' but is " + json.attributes.foo );
+      assert( json.attributes.baz == "bang", "json.attributes.baz should be 'bang' but is " + json.attributes.baz );
+    });
+
+    it('should handle nested opening tags with two attributes', () => {
+      let sentenceOfTokens = lexer.tokenize( "<tag foo='bar' baz='bang'><innertag innerfoo='innerbar' innerbaz='innerbang'></innertag></tag>" );
+      parser.setState( state );
+      let parseTree = parser.parse( sentenceOfTokens, xmlParseTimeVisitor );
+      assert( parseTree[0].type  == "XMLNODE", "parseTree[0].type should be 'XMLNODE' but is " + parseTree[0].type );
+       let json = parseTree[0].visit( xmlJSONVisitor );
+      assert( json.name == "tag", "json.name should be tag but is " + json.name );
+      assert( json.attributes.foo == "bar", "json.attributes.foo should be 'bar' but is " + json.attributes.foo );
+      assert( json.attributes.baz == "bang", "json.attributes.baz should be 'bang' but is " + json.attributes.baz );
+      json = json.children[0];
+      assert( json.name == "innertag", "json.name should be innertag but is " + json.name );
+      assert( json.attributes.innerfoo == "innerbar", "json.attributes.foo should be 'innerbar' but is " + json.attributes.innerfoo );
+      assert( json.attributes.innerbaz == "innerbang", "json.attributes.baz should be 'innerbang' but is " + json.attributes.innerbaz );
+    });
+
+    it.only('should handle simple nodes containing text', () => {
+      let sentenceOfTokens = lexer.tokenize( "<tag>Hello! There!</tag>" );
+      parser.setState( state );
+      let parseTree = parser.parse( sentenceOfTokens, xmlParseTimeVisitor );
+      assert( parseTree[0].type  == "XMLNODE", "parseTree[0].type should be 'XMLNODE' but is " + parseTree[0].type );
+       let json = parseTree[0].visit( xmlJSONVisitor );
+      assert( json.name == "tag", "json.name should be tag but is " + json.name );
+      assert( json.children.length == 1, "json.children.length should be 1 but is " + json.children.length );
+      assert( json.children[0].value == "Hello! There!", "First child should have value 'Hello! There!' but has " + json.children[0].value );
+    });
+
+    it.only('should handle comments in complex statements!', () => {
+      let sentenceOfTokens = lexer.tokenize( "<top foo='bar'>Hello!<simpleChildNode><!-- some comment --></simpleChildNode>There!<complexNode><simpleChildNode></simpleChildNode><simpleChildNode></simpleChildNode></complexNode></top>");
+      parser.setState( state );
+      let parseTree = parser.parse( sentenceOfTokens, xmlParseTimeVisitor );
+      assert( parseTree[0].type  == "XMLNODE", "parseTree[0].type should be 'XMLNODE' but is " + parseTree[0].type );
+       let json = parseTree[0].visit( xmlJSONVisitor );
+      assert( json.name == "top", "json.name should be top but is " + json.name );
+      assert( json.children.length == 1, "json.children.length should be 1 but is " + json.children.length );
+      assert( json.children[0].value == "Hello!There!", "First child should have value 'Hello!There!' but has " + json.children[0].value );
+    });
+
+    it('should catch improper nesting', () => {
+
+    });
+
+    it('should catch illegal node content', () => {
+
+    });
+
+
+
+    it('should catch illegal attribute content in opening tags', () => {
+
+    });
+
+
+  });
+
+    describe('Should declaration of, intialization of, and assignment to variables', () => {
+
+
+
+    });
+
 });

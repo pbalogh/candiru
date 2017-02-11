@@ -8,7 +8,7 @@ entry: {
 output: {
     path: path.resolve(__dirname, 'build'),
     filename: '[name].bundle.js',
-    publicPath: "/build/",
+    publicPath: "/build"
 },
      module: {
          loaders: [

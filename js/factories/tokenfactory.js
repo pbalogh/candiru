@@ -1,10 +1,14 @@
 import Token from '../token';
 
 export default class TokenFactory{
-   constructor(){
+   constructor( tokenDefinitions ){
      this.tokens = [];
+     this.tokenDefinitions = tokenDefinitions;
    }
 
+   makeTokenFromDefinition( tokenDefinition ){
+     return this.makeToken( tokenDefinition[0], tokenDefinition[1], tokenDefinition.length > 2 ? tokenDefinition[2] : false );
+   }
     makeToken( regex, name, ignore = false )
     {
       var token = new Token( regex, name, 0, "", ignore );
@@ -15,26 +19,12 @@ export default class TokenFactory{
     getTokens()
     {
       let IGNORE = true;
-      //this.makeToken( "[0-9]+", "INT" ); // second arg is how this token will present itself to the parser. Must be one character!
-      this.makeToken( /\s+/, "", IGNORE );
-      this.makeToken( /&&/, "&" );
-      this.makeToken( /AND/i, "&" );
-      this.makeToken( /\|\|/, "|" ); // this is the escaped form of ||
-      this.makeToken( /XOR/i, "^" );
-      this.makeToken( /OR/i, "|" );
-      this.makeToken( /\^/, "^" ); // this is the escaped form of ^
-      this.makeToken( /\!/, "!" ); // this is the escaped form of !
-      this.makeToken( /NOT/i, "!" );
-      this.makeToken( /\(/, "(" );
-      this.makeToken( /\)/, ")" );
-      this.makeToken( /\+/, "+" );
-      this.makeToken( /-/, "-" );
-      this.makeToken( /\*/, "*" );
-      this.makeToken( /\//, "/" );
-      this.makeToken( /(true)(?![a-zA-Z0-9])/i, "TRUE" );
-      this.makeToken( /(false)(?![a-zA-Z0-9])/i, "FALSE" );
-      this.makeToken( /[-+]?[0-9]*\.?[0-9]+/, "NUM_LIT" ); // second arg is how this token will present itself to the parser. Must be one character!
-      this.makeToken( /[a-zA-Z]+/, "IDENT" ); // second arg is how this token will present itself to the parser. Must be one character!
+
+      for( let tokenDefinition of this.tokenDefinitions )
+      {
+        this.makeTokenFromDefinition( tokenDefinition )
+      }
       return this.tokens;
+
     }
 }

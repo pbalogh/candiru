@@ -27,7 +27,7 @@ body {
 
 #header {
   top: 10px;
-  left: 140px;
+  left: 100px;
   width: 1000px;
 }
 
@@ -83,11 +83,11 @@ a:hover {
 
 .hint {
   position: absolute;
-  right: -220;
+  left: -2;
   width: 1280px;
-  font-size: 12px;
+  font-size: 14px;
   color: #777;
-  margin-top:-2px;
+  margin-top:2px;
 }
 
 input  {
@@ -97,7 +97,7 @@ input  {
     font-family: monospace;
     padding: 10px 20px;
     font-size: 18px;
-    margin: 20px 10px 20px 0;
+    margin: 30px 0px 0px -10;
     color: darkslategrey;
     }
 button {
@@ -124,3 +124,44 @@ path.link {
   stroke: #ccc;
   stroke-width: 1.5px;
 }
+
+
+/* -------------------- Select Box Styles: bavotasan.com Method (with special adaptations by ericrasch.com) */
+/* -------------------- Source: http://bavotasan.com/2011/style-select-box-using-only-css/ */
+.styled-select {
+   background: url(http://i62.tinypic.com/15xvbd5.png) no-repeat 96% 0;
+   height: 29px;
+   overflow: hidden;
+   width: 240px;
+   float:right;
+}
+
+.styled-select select {
+   background: transparent;
+   border: none;
+   font-size: 14px;
+   height: 29px;
+   padding: 5px; /* If you add too much padding here, the options won't show in IE */
+   width: 268px;
+}
+
+
+.semi-square {
+   -webkit-border-radius: 5px;
+   -moz-border-radius: 5px;
+   border-radius: 5px;
+}
+
+/* -------------------- Colors: Background */
+.slate   { background-color: #ddd; }
+.green   { background-color: #779126; }
+.blue    { background-color: #3b8ec2; }
+.yellow  { background-color: #eec111; }
+.black   { background-color: #000; }
+
+/* -------------------- Colors: Text */
+.slate select   { color: #000; }
+.green select   { color: #fff; }
+.blue select    { color: #fff; }
+.yellow select  { color: #000; }
+.black select   { color: #fff; }
