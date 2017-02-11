@@ -25,6 +25,10 @@ export default class Nonterminal extends Symbol{
       return returnString;
     }
 
+    get symbolsMatched(){
+      return this.seriesOfSymbolsIAbsorbedAndReplaced;
+    }
+
     get length(){
       return this.seriesOfSymbolsIAbsorbedAndReplaced.length;
     }
@@ -33,7 +37,7 @@ export default class Nonterminal extends Symbol{
       return evaluationVisitor.execute( this );
     }
 
-    matchYourselfToStartOfThisStringAndAddSelfToArray( arrayOfSymbolsMatchedBeforeMe, sentenceOfSymbolsToMatch ){
+    matchYourselfToStartOfThisStringAndAddSelfToArray( arrayOfSymbolsMatchedBeforeMe, sentenceOfSymbolsToMatch, parseTimeVisitor ){
 
       let care = false;
 
@@ -169,9 +173,20 @@ export default class Nonterminal extends Symbol{
           }
         }
       }
-
-      arrayOfSymbolsMatchedBeforeMe.push( this.getFrozenClone() );
-      return [ this.length, arrayOfSymbolsMatchedBeforeMe, sentenceOfSymbolsToMatchClone ];
+      // we made it here! must be a basically perfect match.
+      // but let's see if there's a context stack for this parser
+      // e.g., an XML parser keeps a stack of open nodes
+      // so that when you hit a closing tag for a node
+      // the parser can know if it's the most recently opened tag
+      if( ! parseTimeVisitor || parseTimeVisitor.execute( this ) )
+      {
+        arrayOfSymbolsMatchedBeforeMe.push( this.getFrozenClone() );
+        return [ this.length, arrayOfSymbolsMatchedBeforeMe, sentenceOfSymbolsToMatchClone ];
+      }
+      else
+      {
+        return [ 0, arrayOfSymbolsMatchedBeforeMe, sentenceOfSymbolsToMatch ];
+      }
     }
 
     getFrozenClone(){

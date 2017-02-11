@@ -1,17 +1,26 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-    <link type="text/css" rel="stylesheet" href="css/style.css">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
     <script src="js/d3.v3.min.js" charset="utf-8"></script>
+    <link type="text/css" rel="stylesheet" href="css/style.css">
     <script type="text/javascript" src="js/d3.layout.js"></script>
 </head>
-<script src="build/boolius.bundle.js"></script>
+<script src="js/boolius.bundle.js"></script>
+
 
 <body>
     <div id="body">
       <div id="header">
+        <span>Advanced Condition Logic</span>
+        <div class="styled-select green semi-square">
+            <select id="modeSelect">
+                <option>Evaluate Boolean Expressions</option>
+                <option>Evaluate XML</option>
+                <option></option>
+            </select>
+        </div>
 	    <div class="hint">Click operators to expand or collapse. Click leaf nodes to toggle true/false.</div>
-		<!--<span class="hint">Advanced Condition Logic</span>-->
         <input type="text" id="statement" value='((d && c)) || (!b && a) && (!d || !a) && (!c || !b)'></input>
         <button id="testbutton">Test</button>
 
@@ -19,10 +28,56 @@
 	</div>
     <script type="text/javascript">
 
+    d3.select('#modeSelect').on('change', function(e){
+        var selectedMode = d3.select('#modeSelect').node().value.toLowerCase();
+        changeMode( selectedMode );
+    });
+
+    function changeMode( newMode ){
+        if( newMode.indexOf( 'boolean' ) > -1 )
+        {
+            // the user wants to look at boolean expressions.
+            // is boolius already loaded?
+            if(  !evaluator || evaluator.constructor.name != "Boolius" )
+            {
+                makeEvaluatorAndInitialize( new Boolius(), "((d && c)) || (!b && a) && (!d || !a) && (!c || !b)",
+                "Click operators to expand or collapse. Click leaf nodes to toggle true/false." );
+            }
+        }
+        else if( newMode.indexOf( 'xml' ) > -1 )
+        {
+            // the user wants to look at boolean expressions.
+            // is boolius already loaded?
+            if(  !evaluator || evaluator.constructor.name != "XMLius" )
+            {
+                makeEvaluatorAndInitialize( new XMLius(), 
+                "<top foo='bar'>Hello!<simpleChildNode></simpleChildNode>There!<complexNode><simpleChildNode></simpleChildNode><simpleChildNode></simpleChildNode></complexNode></top>",
+                "Click nodes to expand or collapse. Click nodes to see attributes and/or content." );
+            }
+        }
+    }
+
+    function makeEvaluatorAndInitialize( newEvaluator, statement, hintText ){
+        assignEvaluator( newEvaluator );
+        d3.select('#statement').node().value = statement;
+        d3.select('div.hint').text( hintText );
+        evaluateStatement();
+    }
+
+    function assignEvaluator( newEvaluator ) {
+        // don't change if the user wants what they already have
+        if( evaluator && newEvaluator.constructor.name == evaluator.constructor.name ) return;
+        evaluator = newEvaluator;
+    }
+
+var evaluator;
+
+
+
 var winHeight = Math.max( 600, window.innerHeight );
 var winWidth = Math.max( 1000, window.innerWidth );
-var boolius = new Boolius();
-var m = [100, 120, 20, 120],
+
+var m = [120, 120, 20, 120],
     w = winWidth - m[1] - m[3],
     h = winHeight - m[0] - m[2],
     i = 0,
@@ -41,14 +96,6 @@ var vis = d3.select("#body").append("svg:svg")
     .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
 
 vis.append("text")
-	.attr("opacity", .1)
-    .attr("y", 6)
-    .attr("dy", "1.71em")
-    .style("text-anchor", "end")
-    .attr("id", "tooltip")
-    .text("");
-
-vis.append("text")
 	.attr("opacity", 1)
     .attr("y", 246)
     .attr("dy", "1.71em")
@@ -57,12 +104,16 @@ vis.append("text")
     .attr("id", "result")
     .text("");
 
-evaluateStatement();
+
 
 d3.select("#testbutton").on("click", function(e) {
-
 	evaluateStatement();
+});
 
+d3.select("#statement").on("keyup", function(){
+    if(d3.event.keyCode == 13){
+        d3.select("#testbutton").on("click")();
+    }
 });
 
 var parseTree;
@@ -70,9 +121,8 @@ var parseTree;
 function evaluateStatement()
 {
     var statement = d3.select("#statement").node().value;
-	parseTree = boolius.parse( statement );
+	parseTree = evaluator.parse( statement );
 	displayJSON( parseTree );
-
 };
 
 function displayJSON( json )
@@ -98,61 +148,69 @@ function displayJSON( json )
 		toggle(d);
     }
   }
-  // Initialize the display to show a few nodes.
-
+  // Initialize the display to show all nodes.
   root.children.forEach(toggleAll, 444);
-  //toggle(root.children[1]);
 
   update(root);
 };
 
 // Toggle children.
-function toggle(d) {
+function toggle(d, showOverlay) {
 	if( d == undefined ) return;
-  if (d.children) {
-  // hide the children by moving them into _children
-    d._children = d.children;
-    d.children = null;
-  } else {
-  // bring back the hidden children
-    d.children = d._children;
-    d._children = null;
-  }
+    //boolean
+    if( d.value === true  || d.value === false )
+    {
+        if (d.children) {
+        // hide the children by moving them into _children
+            d._children = d.children;
+            d.children = null;
+        } else {
+        // bring back the hidden children
+            d.children = d._children;
+            d._children = null;
+        }
 
-  if( ! d.children && !d._children) // it's a leaf
-  {
-	// toggle true/false
+        if( ! d.children && !d._children) // it's a leaf
+        {
+            // toggle true/false
+            if( ( d.value === true ) || (d.value === false ) )
+            {
+                d.value = !d.value;
+                //var myInt = parseInt( d.name );
+                //conditionTruthValues[ myInt ] = d.value;
+                var myVar = d.name;
+                evaluator.state[ myVar ] = d.value;
+                updateWithoutDeleting(root);
+            }
+        }
+    }
+    else // you clicked something that isn't in a boolean flow
+    {
+        if( showOverlay )
+        {
+            var attributeText = d.attributes ? JSON.stringify( d.attributes ) : "None";
+            if( ! d.children && !d._children) // it's a leaf
+            {
+                //showValueOverlay( d.value );
 
-	d.value = !d.value;
-	//var myInt = parseInt( d.name );
-	//conditionTruthValues[ myInt ] = d.value;
-    var myVar = d.name;
-    boolius.state[ myVar ] = d.value;
-
-  	updateWithoutDeleting(root);
-
-  }
-  else
-  {
-  	d3.select("#tooltip").style("opacity", 0 );
-  	d3.select("#tooltipBG").style("opacity", 0 );
-  }
+                showValueOverlay( "Attributes: " + attributeText + "</br>Content: " + d.value );
+            }
+            else
+            {
+                showValueOverlay( "Attributes: " + attributeText + "</br>Content: " + d.value );
+            }
+        }
+    }
 }
 
-
+function showValueOverlay( val ){
+    $('#valueModalText').html( val );
+    $('#valueModal').modal('show');
+}
 
 function updateWithoutDeleting()
 {
-
-    var statement = d3.select("#statement").property("value");
-
-	if( !statement || statement.length == 0 )
-	{
-		alert("You need to have a statement in the textfield for me to work with.");
-	}
-
-    parseTree = boolius.evaluateParseTree();
-
+    parseTree = evaluator.evaluateParseTree();
     updateObjectAndItsChildren( parseTree, root );
 
 	d3.select("#result")
@@ -216,7 +274,7 @@ function update(source) {
   var nodeEnter = node.enter().append("svg:g")
       .attr("class", "node")
       .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-      .on("click", function(d) { toggle(d); update(d); });
+      .on("click", function(d) { toggle(d, true ); update(d); });
 
   nodeEnter.append("svg:circle")
       .attr("r", 1e-6)
@@ -227,7 +285,7 @@ function update(source) {
       .attr("x", function(d) { return d.children || d._children ? -1 : 17; })
       .attr("y", function(d) { return d.children || d._children ? 18 : -1; })
       .attr("dy", ".35em")
-      .attr("text-anchor", "middle")
+      .attr("text-anchor", function(d) { return d.children || d._children ? "middle" : "left"; })
 //      .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
       .text(function(d) { return d.name; })
       .style("fill-opacity", 1e-6);
@@ -294,9 +352,41 @@ function update(source) {
   });
 }
 
-
+changeMode("boolean");
+evaluateStatement();
     </script>
+<script src="../bower_components/jquery/dist/jquery.min.js"></script>    
+<script src="js/bootstrap.min.js"></script>
 
+
+<!-- Modal -->
+<div class="modal fade" id="valueModal" tabindex="-1" role="dialog"
+     aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <button type="button" class="close"
+                   data-dismiss="modal">
+                       <span aria-hidden="true">&times;</span>
+                       <span class="sr-only">Close</span>
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                    Node Value
+                </h4>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body">
+                <div id="valueModalText">
+                </div>
+
+
+            </div>
+
+        </div>
+    </div>
+</div>
 
 </body>
 </html>

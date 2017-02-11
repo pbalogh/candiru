@@ -39,11 +39,34 @@ describe('Token', function() {
   });
 });
 
+  let IGNORE = true;
+  let tokenDefinitions = [
+        [ /\s+/, "", IGNORE ],
+        [ /&&/, "&" ],
+        [ /AND/i, "&" ],
+        [ /\|\|/, "|" ], // this is the escaped form of ||
+        [ /XOR/i, "^" ],
+        [ /OR/i, "|" ],
+        [ /\^/, "^" ], // this is the escaped form of ^
+        [ /\!/, "!" ], // this is the escaped form of !
+        [ /NOT/i, "!" ],
+        [ /\(/, "(" ],
+        [ /\)/, ")" ],
+        [ /\+/, "+" ],
+        [ /-/, "-" ],
+        [ /\*/, "*" ],
+        [ /\//, "/" ],
+        [ /(true)(?![a-zA-Z0-9])/i, "TRUE" ],
+        [ /(false)(?![a-zA-Z0-9])/i, "FALSE" ],
+        [ /[-+]?[0-9]*\.?[0-9]+/, "NUM_LIT" ], // second arg is how this token will present itself to the parser.
+        [ /[a-zA-Z]+/, "IDENT" ] // second arg is how this token will present itself to the parser.
+      ];
 describe( "TokenFactory", function() {
   let tokenFactory, tokens;
+
   describe( "Creates tokens for app", function() {
     before( function() {
-      tokenFactory = new TokenFactory();
+      tokenFactory = new TokenFactory( tokenDefinitions );
       tokens = tokenFactory.getTokens();
     });
     it("should create 19 tokens for matching boolean sentences", function() {
@@ -56,9 +79,7 @@ describe( "Lexer", function() {
   let tokenFactory, tokens, lexer;
   describe( "Creates tokens for app and", function() {
     before( function() {
-      tokenFactory = new TokenFactory();
-      tokens = tokenFactory.getTokens();
-      lexer = new Lexer( tokens );
+      lexer = new Lexer( tokenDefinitions );
     });
     it("should tokenize AND symbols", function() {
       let arrayOfTokens = lexer.tokenize( "a && b" );

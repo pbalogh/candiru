@@ -1,9 +1,11 @@
 import Symbol from './symbol'
 import Nonterminal from './nonterminal'
+import NonterminalFactory from '../js/factories/nonterminalfactory';
 
 export default class Parser{
-  constructor( nonterminals ){
-    this.nonterminals = nonterminals;
+  constructor( grammarObject ){
+    let nonterminalFactory = new NonterminalFactory( grammarObject );
+    this.nonterminals = nonterminalFactory.getNonterminals();
     this.state = {};
   }
 
@@ -56,7 +58,7 @@ export default class Parser{
           return traceString;
   }
 
-  parse( sentenceOfSymbols ){
+  parse( sentenceOfSymbols, parseTimeVisitor = null ){
 
     sentenceOfSymbols = this.resolveIdentifiersToTypes( sentenceOfSymbols );
     let arrayOfSymbolsMatchedBeforeMe = [];
@@ -78,7 +80,7 @@ export default class Parser{
           {
             //console.log("USING nonterminal " + nonterminal.toStringSimple() + " to look at " + traceString );
             [lengthOfMatch, arrayOfSymbolsMatchedBeforeMe, sentenceOfSymbols ] =
-            nonterminal.matchYourselfToStartOfThisStringAndAddSelfToArray( arrayOfSymbolsMatchedBeforeMe, sentenceOfSymbols );
+            nonterminal.matchYourselfToStartOfThisStringAndAddSelfToArray( arrayOfSymbolsMatchedBeforeMe, sentenceOfSymbols, parseTimeVisitor );
 
             // if we matched, then the good news is, the input sentence is now changed
             // so we don't have to worry about changing it.
@@ -100,7 +102,7 @@ export default class Parser{
           // ok, we did what we could. let's gather our processed items and hand them to the next nonterminal to process.
           sentenceOfSymbols = arrayOfSymbolsMatchedBeforeMe.slice(0); // make sure we copy the items over and keep these two arrays discrete!
           arrayOfSymbolsMatchedBeforeMe = [];
-
+          //console.log("sentenceOfSymbols is now " + sentenceOfSymbols );
           // are we done? if so, then don't bother looking at other nonterminals!
           if( sentenceOfSymbols.length <= 1 )
           {

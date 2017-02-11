@@ -1,8 +1,10 @@
+import TokenFactory from './factories/tokenfactory';
 
 export default class Lexer{
 
-  constructor( tokens ){
-    this.tokens = tokens;
+  constructor( tokenDefinitions ){
+    let tokenFactory = new TokenFactory( tokenDefinitions );
+    this.tokens = tokenFactory.getTokens();
   }
 
   tokenize( sentenceToTokenize ){
