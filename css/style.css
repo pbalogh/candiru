@@ -90,11 +90,15 @@ a:hover {
   display: inline-block;
   font-size: 14px;
   color: #777;
+  min-width:500px;
 }
 
 .hintwrapper {
   margin-top:-22;
   margin-bottom:-22;
+}
+.smaller{
+  font-size: 0.5em;
 }
 
 input  {
@@ -139,7 +143,7 @@ path.link {
    background: url(http://i62.tinypic.com/15xvbd5.png) no-repeat 96% 0;
    height: 29px;
    overflow: hidden;
-   width: 280px;
+   width: 290px;
    margin-left: 40px;
    display: inline-block;
    /*float:right;*/
@@ -151,7 +155,7 @@ path.link {
    font-size: 14px;
    height: 29px;
    padding: 5px; /* If you add too much padding here, the options won't show in IE */
-   width: 308px;
+   width: 318px;
 }
 
 
