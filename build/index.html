@@ -11,19 +11,26 @@
 
 <body>
     <div id="body">
-      <div id="header">
-        <span>Advanced Condition Logic</span>
-        <div class="styled-select green semi-square">
-            <select id="modeSelect">
-                <option>Evaluate Boolean Expressions</option>
-                <option>Evaluate XML</option>
-                <option></option>
-            </select>
-        </div>
-	    <div class="hint">Click operators to expand or collapse. Click leaf nodes to toggle true/false.</div>
-        <input type="text" id="statement" value='((d && c)) || (!b && a) && (!d || !a) && (!c || !b)'></input>
-        <button id="testbutton">Test</button>
 
+      <div id="header">
+        <div>Candiru: </div><!--A Bottom-Up Visitor(-Based Parser)
+
+        -->
+        <div class="hintwrapper">
+	        <div class="hint">Click operators to expand or collapse. Click leaf nodes to toggle true/false.</div>
+
+            <div class="styled-select green semi-square">
+                <select id="modeSelect">
+                    <option>Evaluate Boolean Expressions</option>
+                    <option>Evaluate XML</option>
+                    <option>Arithmetic Operator Ordering (PEMDAS)</option>
+                </select>
+            </div>
+        </div>
+        <div>
+            <input type="text" id="statement" value='((d && c)) || (!b && a) && (!d || !a) && (!c || !b)'></input>
+            <button id="testbutton">Test</button>
+        </div>
       </div>
 	</div>
     <script type="text/javascript">
@@ -34,13 +41,75 @@
     });
 
     function changeMode( newMode ){
-        if( newMode.indexOf( 'boolean' ) > -1 )
+        if( newMode.indexOf( 'arithmetic' ) > -1 )
+        {
+            // the user wants to look at arithmetic expressions.
+            // is boolius already loaded?
+            if(  !evaluator || evaluator.constructor.name != "Mathius" )
+            {
+                var grammarObject = [
+                    [  ["NUMERIC", "^", "NUMERIC" ], "NUMERIC" ],
+                    [  ["NUMERIC", "*", "NUMERIC" ], "NUMERIC" ],
+                    [  ["NUMERIC", "+", "NUMERIC" ], "NUMERIC", ["*", "/", "^"] ],
+                    [  ["NUMERIC", "-", "NUMERIC" ], "NUMERIC", ["*", "/", "^"] ],
+                    [  ["NUM_LIT" ], "NUMERIC" ],
+                    [  ["(", "NUMERIC", ")" ], "NUMERIC" ]
+                ];
+
+                let IGNORE = true;
+
+                let tokenDefinitions = [
+                    [ /\s+/, "", IGNORE ], // ignore whitespace
+                    [ /\^/, "^" ], // this is the escaped form of ^
+                    [ /\(/, "(" ],
+                    [ /\)/, ")" ],
+                    [ /\+/, "+" ],
+                    [ /-/, "-" ],
+                    [ /\*/, "*" ],
+                    [ /\//, "/" ],
+                    [ /[-+]?[0-9]*\.?[0-9]+/, "NUM_LIT" ],
+                    [ /[a-zA-Z]+/, "IDENT" ],
+                    [ /.+/, "DIRTYTEXT"]
+                ];
+                makeEvaluatorAndInitialize( new Mathius( tokenDefinitions, grammarObject ), "1 + 2 ^ (5 - 2) * 3",
+                "Click operators to expand or collapse. Click leaf nodes to toggle true/false." );
+            }
+        }
+        else if( newMode.indexOf( 'boolean' ) > -1 )
         {
             // the user wants to look at boolean expressions.
             // is boolius already loaded?
             if(  !evaluator || evaluator.constructor.name != "Boolius" )
             {
-                makeEvaluatorAndInitialize( new Boolius(), "((d && c)) || (!b && a) && (!d || !a) && (!c || !b)",
+                var grammarObject = [
+                    [  ["TRUE" ], "BOOLEAN" ],
+                    [  ["FALSE" ], "BOOLEAN" ],
+                    [  ["!", "BOOLEAN" ], "BOOLEAN" ],
+                    [  ["BOOLEAN", "&", "BOOLEAN" ], "BOOLEAN" ],
+                    [  ["BOOLEAN", "|", "BOOLEAN" ], "BOOLEAN" ],
+                    [  ["(", "BOOLEAN", ")" ], "BOOLEAN" ]
+                ];
+
+                let IGNORE = true;
+
+                let tokenDefinitions = [
+                    [ /\s+/, "", IGNORE ], // ignore whitespace
+                    [ /&&/, "&" ],
+                    [ /AND/i, "&" ],
+                    [ /\|\|/, "|" ], // this is the escaped form of ||
+                    [ /XOR/i, "^" ],
+                    [ /OR/i, "|" ],
+                    [ /\^/, "^" ], // this is the escaped form of ^
+                    [ /\!/, "!" ], // this is the escaped form of !
+                    [ /NOT/i, "!" ],
+                    [ /\(/, "(" ],
+                    [ /\)/, ")" ],
+                    [ /(true)(?![a-zA-Z0-9])/i, "TRUE" ],
+                    [ /(false)(?![a-zA-Z0-9])/i, "FALSE" ],
+                    [ /[a-zA-Z]+/, "IDENT" ],
+                    [ /.+/, "DIRTYTEXT"]
+                ];
+                makeEvaluatorAndInitialize( new Boolius( tokenDefinitions, grammarObject ), "((d && c)) || (!b && a) && (!d || !a) && (!c || !b)",
                 "Click operators to expand or collapse. Click leaf nodes to toggle true/false." );
             }
         }
@@ -50,7 +119,36 @@
             // is boolius already loaded?
             if(  !evaluator || evaluator.constructor.name != "XMLius" )
             {
-                makeEvaluatorAndInitialize( new XMLius(), 
+                                var grammarObject = [
+                    [  ["OPENCOMMENT", "WILDCARD", "CLOSECOMMENT" ], "COMMENT" ],
+                    [  ["<", "/", "IDENT", ">" ], "CLOSETAG" ],
+                    [  ["<", "IDENT", ">" ], "OPENTAG" ],
+                    [  ["<", "IDENT", "/", ">" ], "XMLNODE" ],
+                    [  ["<", "IDENT", "IDENT", "=", "\"", "WILDCARD", "\"" ], "OPENTAGSTART" ],
+                    /* Some recursive self-nesting here */
+                    [  ["OPENTAGSTART", "IDENT", "=", "\"", "WILDCARD", "\"" ], "OPENTAGSTART" ],
+                    [  ["OPENTAGSTART", ">"], "OPENTAG" ],
+                    [  ["OPENTAG", "CLOSETAG" ], "XMLNODE" ],
+                    [  ["OPENTAG", "WILDCARD", "CLOSETAG" ], "XMLNODE" ]
+                ];
+
+                let IGNORE = true;
+
+                let tokenDefinitions = [
+                    [  /\s+/, "", IGNORE ],
+                    [  /<!--/, 'OPENCOMMENT' ],
+                    [  /-->/, 'CLOSECOMMENT' ],
+                    [  /\//, "/" ],
+                    [  />/, ">" ],
+                    [  /</, "<" ],
+                    [  /=/, "=" ],
+                    [  /"/, '"' ],
+                    [  /'/, '"' ],
+                    [  /[-+]?[0-9]*\.?[0-9]+/, "NUM_LIT" ],
+                    [  /[a-zA-Z]+/, "IDENT" ],
+                    [ /[^<]+/, "DIRTYTEXT"]
+                ];
+                makeEvaluatorAndInitialize( new XMLius( tokenDefinitions, grammarObject ),
                 "<top foo='bar'>Hello!<simpleChildNode></simpleChildNode>There!<complexNode><simpleChildNode></simpleChildNode><simpleChildNode></simpleChildNode></complexNode></top>",
                 "Click nodes to expand or collapse. Click nodes to see attributes and/or content." );
             }
@@ -77,7 +175,7 @@ var evaluator;
 var winHeight = Math.max( 600, window.innerHeight );
 var winWidth = Math.max( 1000, window.innerWidth );
 
-var m = [120, 120, 20, 120],
+var m = [0, 120, 140, 120],
     w = winWidth - m[1] - m[3],
     h = winHeight - m[0] - m[2],
     i = 0,
@@ -364,7 +462,7 @@ function update(source) {
 changeMode("boolean");
 evaluateStatement();
     </script>
-<script src="../bower_components/jquery/dist/jquery.min.js"></script>    
+<script src="../bower_components/jquery/dist/jquery.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
 
 

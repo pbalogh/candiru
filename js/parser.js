@@ -116,17 +116,51 @@ export default class Parser{
 
         } // end of cycling through our array of nonterminals
 
+        // what if we made it through all our nonterminals and didn't make a match?
+        // error, that's what!
+        if( ! madeAMatch )
+        {
+          let stringAndPosition = this.getLastTokenDescriptionOfSymbol( sentenceOfSymbols[0] );
+          let errorString = "\nSyntax error:" + stringAndPosition.string + " at position " + stringAndPosition.position;
+          throw new Error( errorString );
+
+          finished = true;
+        }
+
         if( sentenceOfSymbols.length <= 1 )
         {
           finished = true;
         }
-
+        console.log("finished is " + finished );
     }  // end of our "while" loop going through sentenceOfSymbols until finished == true
 
     return sentenceOfSymbols;
   }
 
+  getLastTokenDescriptionOfSymbol( symbol ){
+     return this.getStringAndPositionOfTokensOfSymbol( symbol.symbolsMatched[ symbol.symbolsMatched.length - 1] );
+  }
 
+  getStringAndPositionOfTokensOfSymbol( symbol, earliestPosition = 100000000 ){
+    if (symbol.constructor.name == "Token" )
+    {
+      return { string: symbol._stringIMatched, position: symbol.start };
+    }
+    else if (symbol.constructor.name == "Nonterminal" )
+    {
+      let tokenString = "";
+      for( let kid of symbol.symbolsMatched )
+      {
+        let stringAndPosition = this.getStringAndPositionOfTokensOfSymbol( kid, earliestPosition );
+        tokenString += stringAndPosition.string;
+        if( stringAndPosition.position < earliestPosition )
+        {
+          earliestPosition = stringAndPosition.position;
+        }
+      }
+      return { string: tokenString, position: earliestPosition };
+    }
+  }
 
 
 }

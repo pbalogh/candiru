@@ -6,9 +6,9 @@ entry: {
     boolius: './js/boolius.js',
 },
 output: {
-    path: path.resolve(__dirname, 'build'),
+    path: path.resolve(__dirname, 'build/js'),
     filename: '[name].bundle.js',
-    publicPath: "/build"
+    publicPath: "/build/js"
 },
      module: {
          loaders: [

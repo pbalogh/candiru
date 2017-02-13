@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "/build/js";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 11);
+/******/ 	return __webpack_require__(__webpack_require__.s = 16);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -229,41 +229,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var _Symbol = function () {
-  function _Symbol() {
-    _classCallCheck(this, _Symbol);
-  }
-
-  _createClass(_Symbol, [{
-    key: "name",
-    get: function get() {
-      return this._name;
-    },
-    set: function set(someName) {
-      this._name = someName;
-    }
-  }]);
-
-  return _Symbol;
-}();
-
-exports.default = _Symbol;
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -348,7 +313,7 @@ var Lexer = function () {
 exports.default = Lexer;
 
 /***/ }),
-/* 4 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -362,7 +327,7 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _symbol = __webpack_require__(2);
+var _symbol = __webpack_require__(4);
 
 var _symbol2 = _interopRequireDefault(_symbol);
 
@@ -521,6 +486,9 @@ var Parser = function () {
             // order MATTERS.
             if (madeAMatch) break;
           } // end of cycling through our array of nonterminals
+
+          // what if we made it through all our nonterminals and didn't make a match?
+          // error, that's what!
         } catch (err) {
           _didIteratorError2 = true;
           _iteratorError2 = err;
@@ -536,12 +504,67 @@ var Parser = function () {
           }
         }
 
+        if (!madeAMatch) {
+          var stringAndPosition = this.getLastTokenDescriptionOfSymbol(sentenceOfSymbols[0]);
+          var errorString = "\nSyntax error:" + stringAndPosition.string + " at position " + stringAndPosition.position;
+          throw new Error(errorString);
+
+          finished = true;
+        }
+
         if (sentenceOfSymbols.length <= 1) {
           finished = true;
         }
+        console.log("finished is " + finished);
       } // end of our "while" loop going through sentenceOfSymbols until finished == true
 
       return sentenceOfSymbols;
+    }
+  }, {
+    key: 'getLastTokenDescriptionOfSymbol',
+    value: function getLastTokenDescriptionOfSymbol(symbol) {
+      return this.getStringAndPositionOfTokensOfSymbol(symbol.symbolsMatched[symbol.symbolsMatched.length - 1]);
+    }
+  }, {
+    key: 'getStringAndPositionOfTokensOfSymbol',
+    value: function getStringAndPositionOfTokensOfSymbol(symbol) {
+      var earliestPosition = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 100000000;
+
+      if (symbol.constructor.name == "Token") {
+        return { string: symbol._stringIMatched, position: symbol.start };
+      } else if (symbol.constructor.name == "Nonterminal") {
+        var tokenString = "";
+        var _iteratorNormalCompletion3 = true;
+        var _didIteratorError3 = false;
+        var _iteratorError3 = undefined;
+
+        try {
+          for (var _iterator3 = symbol.symbolsMatched[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+            var kid = _step3.value;
+
+            var stringAndPosition = this.getStringAndPositionOfTokensOfSymbol(kid, earliestPosition);
+            tokenString += stringAndPosition.string;
+            if (stringAndPosition.position < earliestPosition) {
+              earliestPosition = stringAndPosition.position;
+            }
+          }
+        } catch (err) {
+          _didIteratorError3 = true;
+          _iteratorError3 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion3 && _iterator3.return) {
+              _iterator3.return();
+            }
+          } finally {
+            if (_didIteratorError3) {
+              throw _iteratorError3;
+            }
+          }
+        }
+
+        return { string: tokenString, position: earliestPosition };
+      }
     }
   }]);
 
@@ -549,6 +572,41 @@ var Parser = function () {
 }();
 
 exports.default = Parser;
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var _Symbol = function () {
+  function _Symbol() {
+    _classCallCheck(this, _Symbol);
+  }
+
+  _createClass(_Symbol, [{
+    key: "name",
+    get: function get() {
+      return this._name;
+    },
+    set: function set(someName) {
+      this._name = someName;
+    }
+  }]);
+
+  return _Symbol;
+}();
+
+exports.default = _Symbol;
 
 /***/ }),
 /* 5 */
@@ -563,7 +621,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _symbol = __webpack_require__(2);
+var _symbol = __webpack_require__(4);
 
 var _symbol2 = _interopRequireDefault(_symbol);
 
@@ -803,7 +861,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _symbol = __webpack_require__(2);
+var _symbol = __webpack_require__(4);
 
 var _symbol2 = _interopRequireDefault(_symbol);
 
@@ -874,7 +932,7 @@ var Token = function (_Symbol2) {
   }, {
     key: "toString",
     value: function toString() {
-      return this.type + "(" + this.regexOfThingsIMustMatch.toString() + ")<" + this._stringIMatched + "." + this.startingIndex + ">";
+      return this.type + "(" + this.regexOfThingsIMustMatch.toString() + ")<" + this._stringIMatched + "." + this.start + ">";
     }
   }, {
     key: "type",
@@ -895,6 +953,243 @@ exports.default = Token;
 
 /***/ }),
 /* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _booleanvisitor = __webpack_require__(12);
+
+var _booleanvisitor2 = _interopRequireDefault(_booleanvisitor);
+
+var _numericvisitor = __webpack_require__(8);
+
+var _numericvisitor2 = _interopRequireDefault(_numericvisitor);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var EvaluationVisitor = function () {
+  function EvaluationVisitor(state) {
+    _classCallCheck(this, EvaluationVisitor);
+
+    this.state = state;
+    this.booleanVisitor = new _booleanvisitor2.default(state);
+    this.numericVisitor = new _numericvisitor2.default(state);
+  }
+
+  _createClass(EvaluationVisitor, [{
+    key: 'setState',
+    value: function setState(newstate) {
+      this.state = newstate;
+      this.booleanVisitor.setState(newstate);
+      this.numericVisitor.setState(newstate);
+    }
+  }, {
+    key: 'execute',
+    value: function execute(nonterminalOrToken) {
+      if (nonterminalOrToken.constructor.name == "Nonterminal") {
+        if (nonterminalOrToken.type == "BOOLEAN") return this.booleanVisitor.execute(nonterminalOrToken);
+        if (nonterminalOrToken.type == "NUMERIC") return this.numericVisitor.execute(nonterminalOrToken);
+      } else // it's a token
+        {
+          if (nonterminalOrToken.type.toUpperCase().indexOf("TRUE") > -1) {
+            return true;
+          }
+          if (nonterminalOrToken.type.toUpperCase().indexOf("FALSE") > -1) {
+            return false;
+          }
+          throw new Error("nonterminalOrToken.type is " + nonterminalOrToken.type);
+          return null;
+        }
+    }
+  }]);
+
+  return EvaluationVisitor;
+}();
+
+module.exports = EvaluationVisitor;
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _evaluationvisitor = __webpack_require__(7);
+
+var _evaluationvisitor2 = _interopRequireDefault(_evaluationvisitor);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var NumericVisitor = function () {
+  function NumericVisitor(state) {
+    _classCallCheck(this, NumericVisitor);
+
+    this.state = state;
+  }
+
+  _createClass(NumericVisitor, [{
+    key: "setState",
+    value: function setState(newstate) {
+      this.state = newstate;
+    }
+  }, {
+    key: "execute",
+    value: function execute(nonterminalOrToken) {
+      if (nonterminalOrToken.constructor.name == "Nonterminal") {
+        var symbolsMatched = nonterminalOrToken.seriesOfSymbolsIAbsorbedAndReplaced;
+        var value = "FOO"; // declare this and, hey, initialize it with something we'll notice if there's an error.
+        if (symbolsMatched.length == 1) // we're a nonterminal that absorbed one other thing
+          {
+            value = symbolsMatched[0].visit(this);
+            return value;
+          } else if (symbolsMatched.length == 3) // we're a boolean comprising an operator and two operands
+          {
+            // or maybe we're just a numeric wrapped in parens!
+
+            if (symbolsMatched[0].type == "(" && symbolsMatched[2].type == ")") {
+              return symbolsMatched[1].visit(this);
+            }
+
+            if (symbolsMatched[1].type == "+") {
+              return symbolsMatched[0].visit(this) + symbolsMatched[2].visit(this);
+            } else if (symbolsMatched[1].type == "-") {
+              return symbolsMatched[0].visit(this) - symbolsMatched[2].visit(this);
+            } else if (symbolsMatched[1].type == "*") {
+              return symbolsMatched[0].visit(this) * symbolsMatched[2].visit(this);
+            } else if (symbolsMatched[1].type == "/") {
+              return symbolsMatched[0].visit(this) / symbolsMatched[2].visit(this);
+            } else if (symbolsMatched[1].type == "^") {
+              return Math.pow(symbolsMatched[0].visit(this), symbolsMatched[2].visit(this));
+            } else {
+              throw new Error("WE HAVE 3 SYMBOLS BUT I DON'T KNOW WHAT THIS IS:" + JSON.stringify(symbolsMatched));
+            }
+          } else if (symbolsMatched.length == 2) // we're a boolean with one operator -- probably a not
+          {
+            if (symbolsMatched[0].type == "+") {
+              return symbolsMatched[1].visit(this);
+            }
+            if (symbolsMatched[0].type == "-") {
+              return -1 * symbolsMatched[1].visit(this);
+            } else {
+              throw new Error("IN NUMERICVISITOR, DON'T KNOW WHAT THE OPERATOR OF THIS 2-ELEMENT SYMBOLSMATCHED IS:" + JSON.stringify(symbolsMatched));
+            }
+          }
+
+        throw new Error("UNKNOWN LENGTH OF SYMBOLSMATCHED:" + JSON.stringify(symbolsMatched));
+      } else // it's a token
+        {
+          if (nonterminalOrToken.type.toUpperCase().indexOf("NUM_LIT") > -1) {
+            return parseInt(nonterminalOrToken._stringIMatched);
+          }
+          throw new Error("nonterminalOrToken.type is " + nonterminalOrToken.type);
+          return null;
+        }
+    }
+  }]);
+
+  return NumericVisitor;
+}();
+
+module.exports = NumericVisitor;
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); //import Token from './token';
+//import Symbol from './token';
+
+
+var _lexer = __webpack_require__(2);
+
+var _lexer2 = _interopRequireDefault(_lexer);
+
+var _parser = __webpack_require__(3);
+
+var _parser2 = _interopRequireDefault(_parser);
+
+var _numericvisitor = __webpack_require__(8);
+
+var _numericvisitor2 = _interopRequireDefault(_numericvisitor);
+
+var _mathjsonvisitor = __webpack_require__(13);
+
+var _mathjsonvisitor2 = _interopRequireDefault(_mathjsonvisitor);
+
+var _tokenfactory = __webpack_require__(1);
+
+var _tokenfactory2 = _interopRequireDefault(_tokenfactory);
+
+var _nonterminalfactory = __webpack_require__(0);
+
+var _nonterminalfactory2 = _interopRequireDefault(_nonterminalfactory);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Mathius = function () {
+  function Mathius(tokenDefinitions, grammarObject) {
+    _classCallCheck(this, Mathius);
+
+    // we set the state so that the parser knows the data type of each of these variables
+    // (in this case, boolean)
+    // and later so that the visitor can evaluate each node to determine if it is true or false.
+    this.state = { "a": false, "b": true, "c": false, "d": true, "e": false, "f": true, "g": false, "h": true, "i": false };
+
+    this.visitor = new _mathjsonvisitor2.default(this.state);
+    // lay the groundwork for lexical analysis
+    this.lexer = new _lexer2.default(tokenDefinitions);
+    this.parser = new _parser2.default(grammarObject);
+    this.parser.setState(this.state);
+  }
+
+  _createClass(Mathius, [{
+    key: 'parse',
+    value: function parse(sentenceToParse) {
+      try {
+        var sentenceOfTokens = this.lexer.tokenize(sentenceToParse);
+        this.parseTree = this.parser.parse(sentenceOfTokens);
+        return this.evaluateParseTree();
+      } catch (e) {
+        console.error("ERROR PARSING OR EVALUATING:" + e);
+      }
+    }
+  }, {
+    key: 'evaluateParseTree',
+    value: function evaluateParseTree() {
+      var result = this.parseTree[0].visit(this.visitor);
+      return result;
+    }
+  }]);
+
+  return Mathius;
+}();
+
+exports.default = Mathius;
+
+
+window.Mathius = Mathius;
+
+/***/ }),
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1025,7 +1320,7 @@ var BooleanJSONVisitor = function () {
 module.exports = BooleanJSONVisitor;
 
 /***/ }),
-/* 8 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1039,19 +1334,19 @@ var _createClass = function () { function defineProperties(target, props) { for 
 //import Symbol from './token';
 
 
-var _lexer = __webpack_require__(3);
+var _lexer = __webpack_require__(2);
 
 var _lexer2 = _interopRequireDefault(_lexer);
 
-var _parser = __webpack_require__(4);
+var _parser = __webpack_require__(3);
 
 var _parser2 = _interopRequireDefault(_parser);
 
-var _xmlparsetimevisitor = __webpack_require__(10);
+var _xmlparsetimevisitor = __webpack_require__(15);
 
 var _xmlparsetimevisitor2 = _interopRequireDefault(_xmlparsetimevisitor);
 
-var _xmljsonvisitor = __webpack_require__(9);
+var _xmljsonvisitor = __webpack_require__(14);
 
 var _xmljsonvisitor2 = _interopRequireDefault(_xmljsonvisitor);
 
@@ -1068,16 +1363,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var XMLius = function () {
-  function XMLius() {
+  function XMLius(tokenDefinitions, grammarObject) {
     _classCallCheck(this, XMLius);
-
-    var grammarObject = [[["OPENCOMMENT", "WILDCARD", "CLOSECOMMENT"], "COMMENT"], [["<", "/", "IDENT", ">"], "CLOSETAG"], [["<", "IDENT", ">"], "OPENTAG"], [["<", "IDENT", "/", ">"], "XMLNODE"], [["<", "IDENT", "IDENT", "=", "\"", "WILDCARD", "\""], "OPENTAGSTART"],
-    /* Some recursive self-nesting here */
-    [["OPENTAGSTART", "IDENT", "=", "\"", "WILDCARD", "\""], "OPENTAGSTART"], [["OPENTAGSTART", ">"], "OPENTAG"], [["OPENTAG", "CLOSETAG"], "XMLNODE"], [["OPENTAG", "WILDCARD", "CLOSETAG"], "XMLNODE"]];
-
-    var IGNORE = true;
-
-    var tokenDefinitions = [[/\s+/, "", IGNORE], [/<!--/, 'OPENCOMMENT'], [/-->/, 'CLOSECOMMENT'], [/\//, "/"], [/>/, ">"], [/</, "<"], [/=/, "="], [/"/, '"'], [/'/, '"'], [/[-+]?[0-9]*\.?[0-9]+/, "NUM_LIT"], [/[a-zA-Z]+/, "IDENT"], [/[^<]+/, "DIRTYTEXT"]];
 
     // we set the state so that the parser knows the data type of each of these variables
     // (in this case, boolean)
@@ -1121,7 +1408,227 @@ exports.default = XMLius;
 window.XMLius = XMLius;
 
 /***/ }),
-/* 9 */
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _evaluationvisitor = __webpack_require__(7);
+
+var _evaluationvisitor2 = _interopRequireDefault(_evaluationvisitor);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var BooleanVisitor = function () {
+  function BooleanVisitor(state) {
+    _classCallCheck(this, BooleanVisitor);
+
+    this.state = state;
+  }
+
+  _createClass(BooleanVisitor, [{
+    key: "setState",
+    value: function setState(newstate) {
+      this.state = newstate;
+    }
+  }, {
+    key: "execute",
+    value: function execute(nonterminalOrToken) {
+      if (nonterminalOrToken.constructor.name == "Nonterminal") {
+        var symbolsMatched = nonterminalOrToken.seriesOfSymbolsIAbsorbedAndReplaced;
+        var value = "FOO"; // declare this and, hey, initialize it with something we'll notice if there's an error.
+        if (symbolsMatched.length == 1) // we're a nonterminal that absorbed one other thing
+          {
+            value = symbolsMatched[0].visit(this);
+            return value;
+          } else if (symbolsMatched.length == 3) // we're a boolean comprising an operator and two operands
+          {
+            if (symbolsMatched[1].type == "|") {
+              return symbolsMatched[0].visit(this) || symbolsMatched[2].visit(this);
+            } else if (symbolsMatched[1].type == "&") {
+              return symbolsMatched[0].visit(this) && symbolsMatched[2].visit(this);
+            } else if (symbolsMatched[0].type == "(" && symbolsMatched[2].type == ")") {
+              return symbolsMatched[1].visit(this);
+            } else {
+              throw new Error("DON'T KNOW WHAT THE OPERATOR OF THIS 3-ELEMENT SYMBOLSMATCHED IS:" + JSON.stringify(symbolsMatched));
+            }
+          } else if (symbolsMatched.length == 2) // we're a boolean with one operator -- probably a not
+          {
+            if (symbolsMatched[0].type == "!") {
+              return !symbolsMatched[1].visit(this);
+            } else {
+              throw new Error("DON'T KNOW WHAT THE OPERATOR OF THIS 2-ELEMENT SYMBOLSMATCHED IS:" + JSON.stringify(symbolsMatched));
+            }
+          }
+
+        throw new Error("UNKNOWN LENGTH OF SYMBOLSMATCHED:" + JSON.stringify(symbolsMatched));
+      } else // it's a token
+        {
+          if (nonterminalOrToken.type.toUpperCase().indexOf("TRUE") > -1) {
+            return true;
+          }
+          if (nonterminalOrToken.type.toUpperCase().indexOf("FALSE") > -1) {
+            return false;
+          }
+          if (nonterminalOrToken.type.toUpperCase().indexOf("IDENT") > -1) {
+            return this.state[nonterminalOrToken._stringIMatched];
+          }
+
+          throw new Error("nonterminalOrToken.type is " + nonterminalOrToken.type);
+          return null;
+        }
+    }
+  }]);
+
+  return BooleanVisitor;
+}();
+
+module.exports = BooleanVisitor;
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var MathJSONVisitor = function () {
+  function MathJSONVisitor(state) {
+    _classCallCheck(this, MathJSONVisitor);
+
+    this.state = state;
+  }
+
+  _createClass(MathJSONVisitor, [{
+    key: "setState",
+    value: function setState(newstate) {
+      this.state = newstate;
+    }
+  }, {
+    key: "execute",
+    value: function execute(thingToEvaluate) {
+      var ob = {};
+      ob.name = thingToEvaluate.type;
+      ob.value = thingToEvaluate.value = this.getValue(thingToEvaluate);
+
+      var symbolsMatched = thingToEvaluate.seriesOfSymbolsIAbsorbedAndReplaced;
+
+      switch (thingToEvaluate.type) {
+        case "NUM_LIT":
+          return { name: this.getValue(thingToEvaluate), value: this.getValue(thingToEvaluate), condition: "Condition Text Goes Here" };
+        case "NUMERIC":
+
+          ob.children = [];
+          if (symbolsMatched.length == 3) // there's a binary operator
+            {
+
+              // either a binary operator or "(" + boolean + ")"
+              if (symbolsMatched[0].type == "(" && symbolsMatched[2].type == ")") {
+                // we'll pass it through transparently
+                // in other words, allow our middle child to represent us completely
+                // since the user isn't interested in seeing each "(" represented with its own node onscreen
+                return this.execute(symbolsMatched[1]);
+              } else {
+                ob.name = symbolsMatched[1].type;
+                ob.children.push(this.execute(symbolsMatched[0]));
+                ob.children.push(this.execute(symbolsMatched[2]));
+              }
+            } else if (symbolsMatched.length == 2) // there's a unary operator
+            {
+              // the only unary operator
+              ob.name = symbolsMatched[0].type;
+              ob.children.push(this.execute(symbolsMatched[1]));
+            } else {
+            return this.execute(symbolsMatched[0]);
+          }
+
+          break;
+
+        case "IDENT":
+          // basically a passthrough. Assume our first child is a real operator, and return *its* json.
+          ob.name = thingToEvaluate._stringIMatched;
+      }
+      return ob;
+    }
+  }, {
+    key: "getValue",
+    value: function getValue(nonterminalOrToken) {
+      if (nonterminalOrToken.constructor.name == "Nonterminal") {
+        var symbolsMatched = nonterminalOrToken.seriesOfSymbolsIAbsorbedAndReplaced;
+        var value = "FOO"; // declare this and, hey, initialize it with something we'll notice if there's an error.
+        if (symbolsMatched.length == 1) // we're a nonterminal that absorbed one other thing
+          {
+            value = this.getValue(symbolsMatched[0]);
+            return value;
+          } else if (symbolsMatched.length == 3) // we're a boolean comprising an operator and two operands
+          {
+            // or maybe we're just a numeric wrapped in parens!
+
+            if (symbolsMatched[0].type == "(" && symbolsMatched[2].type == ")") {
+              return this.getValue(symbolsMatched[1]);
+            }
+
+            if (symbolsMatched[1].type == "+") {
+              return this.getValue(symbolsMatched[0]) + this.getValue(symbolsMatched[2]);
+            } else if (symbolsMatched[1].type == "-") {
+              return this.getValue(symbolsMatched[0]) - this.getValue(symbolsMatched[2]);
+            } else if (symbolsMatched[1].type == "*") {
+              return this.getValue(symbolsMatched[0]) * this.getValue(symbolsMatched[2]);
+            } else if (symbolsMatched[1].type == "/") {
+              return this.getValue(symbolsMatched[0]) / this.getValue(symbolsMatched[2]);
+            } else if (symbolsMatched[1].type == "^") {
+              return Math.pow(this.getValue(symbolsMatched[0]), this.getValue(symbolsMatched[2]));
+            } else {
+              throw new Error("WE HAVE 3 SYMBOLS BUT I DON'T KNOW WHAT THIS IS:" + JSON.stringify(symbolsMatched));
+            }
+          } else if (symbolsMatched.length == 2) // we're a boolean with one operator
+          {
+            if (symbolsMatched[0].type == "+") {
+              return this.getValue(symbolsMatched[1]);
+            }
+            if (symbolsMatched[0].type == "-") {
+              return -1 * this.getValue(symbolsMatched[1]);
+            } else {
+              throw new Error("IN NUMERICVISITOR, DON'T KNOW WHAT THE OPERATOR OF THIS 2-ELEMENT SYMBOLSMATCHED IS:" + JSON.stringify(symbolsMatched));
+            }
+          }
+
+        throw new Error("UNKNOWN LENGTH OF SYMBOLSMATCHED:" + JSON.stringify(symbolsMatched));
+      } else // it's a token
+        {
+          if (nonterminalOrToken.type.toUpperCase().indexOf("NUM_LIT") > -1) {
+            return parseInt(nonterminalOrToken._stringIMatched);
+          }
+          throw new Error("nonterminalOrToken.type is " + nonterminalOrToken.type);
+          return null;
+        }
+    }
+  }, {
+    key: "getNameForOperator",
+    value: function getNameForOperator(operatorSymbol) {
+      if (operatorSymbol == "|") return "OR";
+      if (operatorSymbol == "&") return "AND";
+      if (operatorSymbol == "^") return "XOR";
+      if (operatorSymbol == "!") return "NOT";
+    }
+  }]);
+
+  return MathJSONVisitor;
+}();
+
+module.exports = MathJSONVisitor;
+
+/***/ }),
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1364,7 +1871,7 @@ var XMLJSONVisitor = function () {
 module.exports = XMLJSONVisitor;
 
 /***/ }),
-/* 10 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1464,7 +1971,7 @@ var XMLParseTimeVisitor = function () {
 module.exports = XMLParseTimeVisitor;
 
 /***/ }),
-/* 11 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1478,19 +1985,23 @@ var _createClass = function () { function defineProperties(target, props) { for 
 //import Symbol from './token';
 
 
-var _lexer = __webpack_require__(3);
+var _lexer = __webpack_require__(2);
 
 var _lexer2 = _interopRequireDefault(_lexer);
 
-var _parser = __webpack_require__(4);
+var _parser = __webpack_require__(3);
 
 var _parser2 = _interopRequireDefault(_parser);
 
-var _xmlius = __webpack_require__(8);
+var _xmlius = __webpack_require__(11);
 
 var _xmlius2 = _interopRequireDefault(_xmlius);
 
-var _booleanjsonvisitor = __webpack_require__(7);
+var _mathius = __webpack_require__(9);
+
+var _mathius2 = _interopRequireDefault(_mathius);
+
+var _booleanjsonvisitor = __webpack_require__(10);
 
 var _booleanjsonvisitor2 = _interopRequireDefault(_booleanjsonvisitor);
 
@@ -1507,19 +2018,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Boolius = function () {
-  function Boolius() {
+  function Boolius(tokenDefinitions, grammarObject) {
     _classCallCheck(this, Boolius);
-
-    var grammarObject = [[["TRUE"], "BOOLEAN"], [["FALSE"], "BOOLEAN"], [["!", "BOOLEAN"], "BOOLEAN"], [["BOOLEAN", "&", "BOOLEAN"], "BOOLEAN"], [["BOOLEAN", "|", "BOOLEAN"], "BOOLEAN"], [["(", "BOOLEAN", ")"], "BOOLEAN"], [["NUMERIC", "^", "NUMERIC"], "NUMERIC"], [["NUMERIC", "*", "NUMERIC"], "NUMERIC"], [["NUMERIC", "+", "NUMERIC"], "NUMERIC", ["*", "/", "^"]], [["NUMERIC", "-", "NUMERIC"], "NUMERIC", ["*", "/", "^"]], [["NUM_LIT"], "NUMERIC"], [["(", "NUMERIC", ")"], "NUMERIC"]];
-
-    var IGNORE = true;
-    // first arg is the regex that does the matching
-    // second arg is how this token will present itself to the parser.
-    var tokenDefinitions = [[/\s+/, "", IGNORE], // ignore whitespace
-    [/&&/, "&"], [/AND/i, "&"], [/\|\|/, "|"], // this is the escaped form of ||
-    [/XOR/i, "^"], [/OR/i, "|"], [/\^/, "^"], // this is the escaped form of ^
-    [/\!/, "!"], // this is the escaped form of !
-    [/NOT/i, "!"], [/\(/, "("], [/\)/, ")"], [/\+/, "+"], [/-/, "-"], [/\*/, "*"], [/\//, "/"], [/(true)(?![a-zA-Z0-9])/i, "TRUE"], [/(false)(?![a-zA-Z0-9])/i, "FALSE"], [/[-+]?[0-9]*\.?[0-9]+/, "NUM_LIT"], [/[a-zA-Z]+/, "IDENT"], [/.+/, "DIRTYTEXT"]];
 
     // we set the state so that the parser knows the data type of each of these variables
     // (in this case, boolean)

@@ -55,7 +55,7 @@ export default class Token extends Symbol{
   }
 
   toString(){
-    return this.type + "(" + this.regexOfThingsIMustMatch.toString() + ")<" + this._stringIMatched + "." + this.startingIndex + ">";
+    return this.type + "(" + this.regexOfThingsIMustMatch.toString() + ")<" + this._stringIMatched + "." + this.start + ">";
   }
 
 }

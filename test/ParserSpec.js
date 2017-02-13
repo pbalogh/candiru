@@ -454,7 +454,7 @@ describe('Parser', () => {
     let xmlJSONVisitor = new XMLJSONVisitor();
 
     let visitor = new EvaluationVisitor();
-    
+
     let IGNORE = true;
 
     before( () => {
@@ -566,7 +566,7 @@ describe('Parser', () => {
       assert( json.attributes.innerbaz == "innerbang", "json.attributes.baz should be 'innerbang' but is " + json.attributes.innerbaz );
     });
 
-    it.only('should handle simple nodes containing text', () => {
+    it('should handle simple nodes containing text', () => {
       let sentenceOfTokens = lexer.tokenize( "<tag>Hello! There!</tag>" );
       parser.setState( state );
       let parseTree = parser.parse( sentenceOfTokens, xmlParseTimeVisitor );
@@ -577,10 +577,11 @@ describe('Parser', () => {
       assert( json.children[0].value == "Hello! There!", "First child should have value 'Hello! There!' but has " + json.children[0].value );
     });
 
-    it.only('should handle comments in complex statements!', () => {
+    it('should handle comments in complex statements!', () => {
       let sentenceOfTokens = lexer.tokenize( "<top foo='bar'>Hello!<simpleChildNode><!-- some comment --></simpleChildNode>There!<complexNode><simpleChildNode></simpleChildNode><simpleChildNode></simpleChildNode></complexNode></top>");
       parser.setState( state );
       let parseTree = parser.parse( sentenceOfTokens, xmlParseTimeVisitor );
+      console.log("parseTree is " + parseTree.toString() );
       assert( parseTree[0].type  == "XMLNODE", "parseTree[0].type should be 'XMLNODE' but is " + parseTree[0].type );
        let json = parseTree[0].visit( xmlJSONVisitor );
       assert( json.name == "top", "json.name should be top but is " + json.name );
@@ -588,8 +589,19 @@ describe('Parser', () => {
       assert( json.children[0].value == "Hello!There!", "First child should have value 'Hello!There!' but has " + json.children[0].value );
     });
 
-    it('should catch improper nesting', () => {
-
+    it.only('should catch improper nesting', () => {
+       let sentenceOfTokens = lexer.tokenize( "<top>Hello!<simpleChildNode>There!<complexNode></top></simpleChildNode>");
+      parser.setState( state );
+      // parsing should throw an error
+      try
+      {
+        let parseTree = parser.parse( sentenceOfTokens, xmlParseTimeVisitor );
+        assert( false == true, "Syntax error should have been thrown");
+      }
+      catch( e )
+      {
+        assert(true == true );
+      }
     });
 
     it('should catch illegal node content', () => {

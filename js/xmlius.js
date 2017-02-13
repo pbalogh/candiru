@@ -8,36 +8,8 @@ import TokenFactory from './factories/tokenfactory';
 import NonterminalFactory from './factories/nonterminalfactory';
 
 export default class XMLius{
-  constructor(){
-    let grammarObject = [
-        [  ["OPENCOMMENT", "WILDCARD", "CLOSECOMMENT" ], "COMMENT" ],
-        [  ["<", "/", "IDENT", ">" ], "CLOSETAG" ],
-        [  ["<", "IDENT", ">" ], "OPENTAG" ],
-        [  ["<", "IDENT", "/", ">" ], "XMLNODE" ],
-        [  ["<", "IDENT", "IDENT", "=", "\"", "WILDCARD", "\"" ], "OPENTAGSTART" ],
-        /* Some recursive self-nesting here */
-        [  ["OPENTAGSTART", "IDENT", "=", "\"", "WILDCARD", "\"" ], "OPENTAGSTART" ],
-        [  ["OPENTAGSTART", ">"], "OPENTAG" ],
-        [  ["OPENTAG", "CLOSETAG" ], "XMLNODE" ],
-        [  ["OPENTAG", "WILDCARD", "CLOSETAG" ], "XMLNODE" ]
-      ];
+  constructor( tokenDefinitions, grammarObject ){
 
-  let IGNORE = true;
-
-      let tokenDefinitions = [
-        [  /\s+/, "", IGNORE ],
-        [  /<!--/, 'OPENCOMMENT' ],
-        [  /-->/, 'CLOSECOMMENT' ],
-        [  /\//, "/" ],
-        [  />/, ">" ],
-        [  /</, "<" ],
-        [  /=/, "=" ],
-        [  /"/, '"' ],
-        [  /'/, '"' ],
-        [  /[-+]?[0-9]*\.?[0-9]+/, "NUM_LIT" ],
-        [  /[a-zA-Z]+/, "IDENT" ],
-        [ /[^<]+/, "DIRTYTEXT"]
-      ];
 
 
     // we set the state so that the parser knows the data type of each of these variables
