@@ -13,9 +13,7 @@
     <div id="body">
 
       <div id="header">
-        <div>Candiru: </div><!--A Bottom-Up Visitor(-Based Parser)
-
-        -->
+        <div>Candiru: <span class="smaller">A Bottom-Up Visitor(-Based Parser)</span></div>
         <div class="hintwrapper">
 	        <div class="hint">Click operators to expand or collapse. Click leaf nodes to toggle true/false.</div>
 
@@ -72,7 +70,7 @@
                     [ /.+/, "DIRTYTEXT"]
                 ];
                 makeEvaluatorAndInitialize( new Mathius( tokenDefinitions, grammarObject ), "1 + 2 ^ (5 - 2) * 3",
-                "Click operators to expand or collapse. Click leaf nodes to toggle true/false." );
+                "Click operators to expand or collapse." );
             }
         }
         else if( newMode.indexOf( 'boolean' ) > -1 )
