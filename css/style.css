@@ -7,13 +7,14 @@ body {
 }
 
 #chart, #header, #footer {
-  position: absolute;
+  /*position: absolute;*/
   top: 0;
 }
 
 #header, #footer {
   z-index: 1;
-  display: block;
+  padding:4px 0px 0px 14px;
+  /*display: block;*/
   font-size: 36px;
   font-weight: 300;
   text-shadow: 0 1px 0 #fff;
@@ -82,12 +83,18 @@ a:hover {
 }
 
 .hint {
-  position: absolute;
+  /*position: absolute;*/
   left: -2;
-  width: 1280px;
+  position:relative;
+  margin-top:-122px;
+  display: inline-block;
   font-size: 14px;
   color: #777;
-  margin-top:2px;
+}
+
+.hintwrapper {
+  margin-top:-22;
+  margin-bottom:-22;
 }
 
 input  {
@@ -132,8 +139,10 @@ path.link {
    background: url(http://i62.tinypic.com/15xvbd5.png) no-repeat 96% 0;
    height: 29px;
    overflow: hidden;
-   width: 240px;
-   float:right;
+   width: 280px;
+   margin-left: 40px;
+   display: inline-block;
+   /*float:right;*/
 }
 
 .styled-select select {
@@ -142,7 +151,7 @@ path.link {
    font-size: 14px;
    height: 29px;
    padding: 5px; /* If you add too much padding here, the options won't show in IE */
-   width: 268px;
+   width: 308px;
 }
 
 
@@ -165,3 +174,11 @@ path.link {
 .blue select    { color: #fff; }
 .yellow select  { color: #000; }
 .black select   { color: #fff; }
+/*
+#testbutton{
+  float:right;
+}
+#statement{
+  clear:both;
+}
+*/
