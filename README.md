@@ -14,7 +14,8 @@ In the Javascript function that serves as the callback for the pulldown's change
 ## Visitors
 This demo uses D3 to visualize the data produced by parsing statements into a parse tree and then evaluating that tree to get a final return value (and to assign values to various nodes in the tree during the evaluation process). 
 ### JSON Visitors (evaluation-time)
-Since D3 consumes JSON, every Parser will need some kind of JSON-creating visitor to apply to the final parse tree. Generally, the root of the parse tree is told to call a visit with that evaluation visitor. (E.g., "parseTree[0].visit( myJSONcreatingVisitor );")
+Since D3 consumes JSON, every Parser will need some kind of JSON-creating visitor to apply to the final parse tree. Generally, the root of the parse tree is told to call a visit with that evaluation visitor. E.g.:
+```parseTree[0].visit( myJSONcreatingVisitor );```
 
 
 ### Parse-Time Visitor
