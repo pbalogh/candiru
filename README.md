@@ -28,4 +28,5 @@ However, the XML parser also needs a parse-time visitor to enforce XML rules suc
   - Better display for parsing and lexing errors (using try/catch)
   - HTML pages are throwing lexer errors for '"'
   - Visitor classes need clearer naming -- right now, default assumption is that a visitor is an Evaluation visitor
+  - Set up packaging correctly. boolius.js shouldn't be the entry file -- or, if it is, it certainly shouldn't be the only thing in module.exports! (export default class is not right)
   
