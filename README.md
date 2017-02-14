@@ -1,6 +1,8 @@
 # Candiru
 A bottom-up deterministic parser with lookahead of 1 (so far).
 
+Live demo is [here](https://pbalogh.github.io/candiru/): 
+
 node-modules isn't committed, of course, so 'npm install' to get things going.
 
 Right now, the only way to see it in action is to run 'npm test'. 
