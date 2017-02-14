@@ -24,5 +24,6 @@ However, the XML parser also needs a parse-time visitor to enforce XML rules suc
 ## Next steps: 
   - D3 parse tree for XML should have mouseover handling (e.g., if node has "attributes", show in modal)
   - Better display for parsing and lexing errors (using try/catch)
-  - HTML pages are throwing lexer errors for "
+  - HTML pages are throwing lexer errors for '"'
+  - Visitor classes need clearer naming -- right now, default assumption is that a visitor is an Evaluation visitor
   
