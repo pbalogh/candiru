@@ -1,11 +1,11 @@
 # Candiru
-A bottom-up deterministic parser with lookahead of 1 (so far).
+A bottom-up deterministic parser with lookahead of 1 (so far). Written in ES6 using Babel and Webpack to transpile and bundle.
 
 Live demo is [here](https://pbalogh.github.io/candiru/).
 
 node-modules isn't committed, of course, so 'npm install' to get things going.
 
-Right now, the only way to see it in action is to run 'npm test'. 
+```npm test``` to run the mocha tests, ```npm run watch``` to have it watch for changes to code and use webpack rebuild the bundle.
 
 ## Overview
 The pulldown lets you choose between three different types of input statements that Candiru can parse: booleans, XML, and arithmetic.
