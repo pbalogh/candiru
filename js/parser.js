@@ -131,7 +131,6 @@ export default class Parser{
         {
           finished = true;
         }
-        console.log("finished is " + finished );
     }  // end of our "while" loop going through sentenceOfSymbols until finished == true
 
     return sentenceOfSymbols;

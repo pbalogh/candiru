@@ -515,7 +515,6 @@ var Parser = function () {
         if (sentenceOfSymbols.length <= 1) {
           finished = true;
         }
-        console.log("finished is " + finished);
       } // end of our "while" loop going through sentenceOfSymbols until finished == true
 
       return sentenceOfSymbols;
