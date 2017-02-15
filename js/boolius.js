@@ -8,7 +8,8 @@ import BooleanJSONVisitor from './visitors/booleanjsonvisitor';
 import TokenFactory from './factories/tokenfactory';
 import NonterminalFactory from './factories/nonterminalfactory';
 
-export default class Boolius{
+export class Boolius{
+
   constructor( tokenDefinitions, grammarObject ){
 
     // we set the state so that the parser knows the data type of each of these variables
@@ -40,4 +41,5 @@ export default class Boolius{
     return result;
   }
 }
-window.Boolius = Boolius;
+//window.Boolius = Boolius;
+module.exports = Boolius;

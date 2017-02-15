@@ -2,12 +2,13 @@ var path = require('path');
 var webpack = require('webpack');
 
  module.exports = {
-entry: {
-    boolius: './js/boolius.js',
-},
+entry: [
+    './js/boolius.js',
+    './js/visualizer.js'
+],
 output: {
     path: path.resolve(__dirname, 'build/js'),
-    filename: '[name].bundle.js',
+    filename: 'boolius.bundle.js',
     publicPath: "/build/js"
 },
      module: {

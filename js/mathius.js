@@ -23,6 +23,7 @@ export default class Mathius{
   }
 
 
+
   parse( sentenceToParse ){
     try
     {
@@ -41,6 +42,4 @@ export default class Mathius{
     return result;
   }
 }
-
-
 window.Mathius = Mathius;
