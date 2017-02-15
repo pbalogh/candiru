@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "/build/js";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 16);
+/******/ 	return __webpack_require__(__webpack_require__.s = 18);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -79,7 +79,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _nonterminal = __webpack_require__(5);
+var _nonterminal = __webpack_require__(6);
 
 var _nonterminal2 = _interopRequireDefault(_nonterminal);
 
@@ -149,7 +149,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _token = __webpack_require__(6);
+var _token = __webpack_require__(7);
 
 var _token2 = _interopRequireDefault(_token);
 
@@ -331,7 +331,7 @@ var _symbol = __webpack_require__(4);
 
 var _symbol2 = _interopRequireDefault(_symbol);
 
-var _nonterminal = __webpack_require__(5);
+var _nonterminal = __webpack_require__(6);
 
 var _nonterminal2 = _interopRequireDefault(_nonterminal);
 
@@ -618,6 +618,95 @@ exports.default = _Symbol;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.Boolius = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); //import Token from './token';
+//import Symbol from './token';
+
+
+var _lexer = __webpack_require__(2);
+
+var _lexer2 = _interopRequireDefault(_lexer);
+
+var _parser = __webpack_require__(3);
+
+var _parser2 = _interopRequireDefault(_parser);
+
+var _xmlius = __webpack_require__(17);
+
+var _xmlius2 = _interopRequireDefault(_xmlius);
+
+var _mathius = __webpack_require__(11);
+
+var _mathius2 = _interopRequireDefault(_mathius);
+
+var _booleanjsonvisitor = __webpack_require__(12);
+
+var _booleanjsonvisitor2 = _interopRequireDefault(_booleanjsonvisitor);
+
+var _tokenfactory = __webpack_require__(1);
+
+var _tokenfactory2 = _interopRequireDefault(_tokenfactory);
+
+var _nonterminalfactory = __webpack_require__(0);
+
+var _nonterminalfactory2 = _interopRequireDefault(_nonterminalfactory);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Boolius = exports.Boolius = function () {
+  function Boolius(tokenDefinitions, grammarObject) {
+    _classCallCheck(this, Boolius);
+
+    // we set the state so that the parser knows the data type of each of these variables
+    // (in this case, boolean)
+    // and later so that the visitor can evaluate each node to determine if it is true or false.
+    this.state = { "a": false, "b": true, "c": false, "d": true, "e": false, "f": true, "g": false, "h": true, "i": false };
+    this.visitor = new _booleanjsonvisitor2.default(this.state);
+    // lay the groundwork for lexical analysis
+    this.lexer = new _lexer2.default(tokenDefinitions);
+    this.parser = new _parser2.default(grammarObject);
+    this.parser.setState(this.state);
+  }
+
+  _createClass(Boolius, [{
+    key: 'parse',
+    value: function parse(sentenceToParse) {
+      try {
+        var sentenceOfTokens = this.lexer.tokenize(sentenceToParse);
+        this.parseTree = this.parser.parse(sentenceOfTokens);
+        return this.evaluateParseTree();
+      } catch (e) {
+        alert(e);
+      }
+    }
+  }, {
+    key: 'evaluateParseTree',
+    value: function evaluateParseTree() {
+      var result = this.parseTree[0].visit(this.visitor);
+      return result;
+    }
+  }]);
+
+  return Boolius;
+}();
+//window.Boolius = Boolius;
+
+
+module.exports = Boolius;
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -849,7 +938,7 @@ var Nonterminal = function (_Symbol2) {
 exports.default = Nonterminal;
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -952,7 +1041,7 @@ var Token = function (_Symbol2) {
 exports.default = Token;
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -960,11 +1049,11 @@ exports.default = Token;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _booleanvisitor = __webpack_require__(12);
+var _booleanvisitor = __webpack_require__(13);
 
 var _booleanvisitor2 = _interopRequireDefault(_booleanvisitor);
 
-var _numericvisitor = __webpack_require__(8);
+var _numericvisitor = __webpack_require__(9);
 
 var _numericvisitor2 = _interopRequireDefault(_numericvisitor);
 
@@ -1014,7 +1103,7 @@ var EvaluationVisitor = function () {
 module.exports = EvaluationVisitor;
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1022,7 +1111,7 @@ module.exports = EvaluationVisitor;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _evaluationvisitor = __webpack_require__(7);
+var _evaluationvisitor = __webpack_require__(8);
 
 var _evaluationvisitor2 = _interopRequireDefault(_evaluationvisitor);
 
@@ -1103,7 +1192,341 @@ var NumericVisitor = function () {
 module.exports = NumericVisitor;
 
 /***/ }),
-/* 9 */
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _boolius = __webpack_require__(5);
+
+var _boolius2 = _interopRequireDefault(_boolius);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// which in turn imports all the other classes
+
+window.onload = function () {
+    console.log("visualizer window.onLoad");
+    d3.select('#modeSelect').on('change', function (e) {
+        var selectedMode = d3.select('#modeSelect').node().value.toLowerCase();
+        changeMode(selectedMode);
+    });
+
+    function changeMode(newMode) {
+        if (newMode.indexOf('arithmetic') > -1) {
+            // the user wants to look at arithmetic expressions.
+            // is boolius already loaded?
+            if (!evaluator || evaluator.constructor.name != "Mathius") {
+                var grammarObject = [[["NUMERIC", "^", "NUMERIC"], "NUMERIC"], [["NUMERIC", "*", "NUMERIC"], "NUMERIC"], [["NUMERIC", "+", "NUMERIC"], "NUMERIC", ["*", "/", "^"]], [["NUMERIC", "-", "NUMERIC"], "NUMERIC", ["*", "/", "^"]], [["NUM_LIT"], "NUMERIC"], [["(", "NUMERIC", ")"], "NUMERIC"]];
+
+                var IGNORE = true;
+
+                var tokenDefinitions = [[/\s+/, "", IGNORE], // ignore whitespace
+                [/\^/, "^"], // this is the escaped form of ^
+                [/\(/, "("], [/\)/, ")"], [/\+/, "+"], [/-/, "-"], [/\*/, "*"], [/\//, "/"], [/[-+]?[0-9]*\.?[0-9]+/, "NUM_LIT"], [/[a-zA-Z]+/, "IDENT"], [/.+/, "DIRTYTEXT"]];
+                makeEvaluatorAndInitialize(new Mathius(tokenDefinitions, grammarObject), "1 + 2 ^ (5 - 2) * 3", "Click operators to expand or collapse.");
+            }
+        } else if (newMode.indexOf('boolean') > -1) {
+            // the user wants to look at boolean expressions.
+            // is boolius already loaded?
+            if (!evaluator || evaluator.constructor.name != "Boolius") {
+                var grammarObject = [[["TRUE"], "BOOLEAN"], [["FALSE"], "BOOLEAN"], [["!", "BOOLEAN"], "BOOLEAN"], [["BOOLEAN", "&", "BOOLEAN"], "BOOLEAN"], [["BOOLEAN", "|", "BOOLEAN"], "BOOLEAN"], [["(", "BOOLEAN", ")"], "BOOLEAN"]];
+
+                var _IGNORE = true;
+
+                var _tokenDefinitions = [[/\s+/, "", _IGNORE], // ignore whitespace
+                [/&&/, "&"], [/AND/i, "&"], [/\|\|/, "|"], // this is the escaped form of ||
+                [/XOR/i, "^"], [/OR/i, "|"], [/\^/, "^"], // this is the escaped form of ^
+                [/\!/, "!"], // this is the escaped form of !
+                [/NOT/i, "!"], [/\(/, "("], [/\)/, ")"], [/(true)(?![a-zA-Z0-9])/i, "TRUE"], [/(false)(?![a-zA-Z0-9])/i, "FALSE"], [/[a-zA-Z]+/, "IDENT"], [/.+/, "DIRTYTEXT"]];
+                makeEvaluatorAndInitialize(new _boolius2.default(_tokenDefinitions, grammarObject), "((d && c)) || (!b && a) && (!d || !a) && (!c || !b)", "Click operators to expand or collapse. Click leaf nodes to toggle true/false.");
+            }
+        } else if (newMode.indexOf('xml') > -1) {
+            // the user wants to look at boolean expressions.
+            // is boolius already loaded?
+            if (!evaluator || evaluator.constructor.name != "XMLius") {
+                var grammarObject = [[["OPENCOMMENT", "WILDCARD", "CLOSECOMMENT"], "COMMENT"], [["<", "/", "IDENT", ">"], "CLOSETAG"], [["<", "IDENT", ">"], "OPENTAG"], [["<", "IDENT", "/", ">"], "XMLNODE"], [["<", "IDENT", "IDENT", "=", "\"", "WILDCARD", "\""], "OPENTAGSTART"],
+                /* Some recursive self-nesting here */
+                [["OPENTAGSTART", "IDENT", "=", "\"", "WILDCARD", "\""], "OPENTAGSTART"], [["OPENTAGSTART", ">"], "OPENTAG"], [["OPENTAG", "CLOSETAG"], "XMLNODE"], [["OPENTAG", "WILDCARD", "CLOSETAG"], "XMLNODE"]];
+
+                var _IGNORE2 = true;
+
+                var _tokenDefinitions2 = [[/\s+/, "", _IGNORE2], [/<!--/, 'OPENCOMMENT'], [/-->/, 'CLOSECOMMENT'], [/\//, "/"], [/>/, ">"], [/</, "<"], [/=/, "="], [/"/, '"'], [/'/, '"'], [/[-+]?[0-9]*\.?[0-9]+/, "NUM_LIT"], [/[a-zA-Z]+/, "IDENT"], [/[^<]+/, "DIRTYTEXT"]];
+                makeEvaluatorAndInitialize(new XMLius(_tokenDefinitions2, grammarObject), "<top foo='bar'>Hello!<simpleChildNode></simpleChildNode>There!<complexNode><simpleChildNode></simpleChildNode><simpleChildNode></simpleChildNode></complexNode></top>", "Click nodes to expand or collapse. Click nodes to see attributes and/or content.");
+            }
+        }
+    }
+
+    function makeEvaluatorAndInitialize(newEvaluator, statement, hintText) {
+        assignEvaluator(newEvaluator);
+        d3.select('#statement').node().value = statement;
+        d3.select('div.hint').text(hintText);
+        evaluateStatement();
+    }
+
+    function assignEvaluator(newEvaluator) {
+        // don't change if the user wants what they already have
+        if (evaluator && newEvaluator.constructor.name == evaluator.constructor.name) return;
+        evaluator = newEvaluator;
+    }
+
+    var evaluator;
+
+    var winHeight = Math.max(600, window.innerHeight);
+    var winWidth = Math.max(1000, window.innerWidth);
+
+    var m = [0, 120, 140, 120],
+        w = winWidth - m[1] - m[3],
+        h = winHeight - m[0] - m[2],
+        i = 0,
+        root;
+
+    var tree = d3.layout.tree().size([h, w]);
+
+    var diagonal = d3.svg.diagonal().projection(function (d) {
+        return [d.y, d.x];
+    });
+
+    var vis = d3.select("#body").append("svg:svg").attr("width", w + m[1] + m[3]).attr("height", h + m[0] + m[2]).append("svg:g").attr("transform", "translate(" + m[3] + "," + m[0] + ")");
+
+    vis.append("text").attr("opacity", 1).attr("y", 246).attr("dy", "1.71em").style("font-size", "34px").style("text-anchor", "end").attr("id", "result").text("");
+
+    d3.select("#testbutton").on("click", function (e) {
+        evaluateStatement();
+    });
+
+    d3.select("#statement").on("keyup", function () {
+        if (d3.event.keyCode == 13) {
+            d3.select("#testbutton").on("click")();
+        }
+    });
+
+    var parseTree;
+
+    function evaluateStatement() {
+        var statement = d3.select("#statement").node().value;
+        parseTree = evaluator.parse(statement);
+        displayJSON(parseTree);
+    };
+
+    function displayJSON(json) {
+        root = json;
+        root.x0 = h / 2;
+        root.y0 = 0;
+        //d3.select("#statement").val( root.title );
+        d3.select("#statement").property("value", root.expressionString);
+
+        d3.select("#result").text(root.value);
+
+        function toggleAll(d, delay) {
+
+            if (!delay) delay = 1;
+
+            if (d.children) {
+                toggle(d);
+            }
+
+            if (d._children) {
+                toggle(d);
+            }
+        }
+        // Initialize the display to show all nodes.
+        root.children.forEach(toggleAll, 444);
+
+        update(root);
+    };
+
+    // Toggle children.
+    function toggle(d, showOverlay) {
+        if (d == undefined) return;
+        //boolean
+        if (d.value === true || d.value === false) {
+            if (d.children) {
+                // hide the children by moving them into _children
+                d._children = d.children;
+                d.children = null;
+            } else {
+                // bring back the hidden children
+                d.children = d._children;
+                d._children = null;
+            }
+
+            if (!d.children && !d._children) // it's a leaf
+                {
+                    // toggle true/false
+                    if (d.value === true || d.value === false) {
+                        d.value = !d.value;
+                        //var myInt = parseInt( d.name );
+                        //conditionTruthValues[ myInt ] = d.value;
+                        var myVar = d.name;
+                        evaluator.state[myVar] = d.value;
+                        updateWithoutDeleting(root);
+                    }
+                }
+        } else // you clicked something that isn't in a boolean flow
+            {
+                if (showOverlay) {
+                    var attributeText = d.attributes ? JSON.stringify(d.attributes) : "None";
+                    if (!d.children && !d._children) // it's a leaf
+                        {
+                            //showValueOverlay( d.value );
+
+                            showValueOverlay("Attributes: " + attributeText + "</br>Content: " + d.value);
+                        } else //oops, we wanted to collapse this thing
+                        {
+                            //showValueOverlay( "Attributes: " + attributeText + "</br>Content: " + d.value );
+                            if (d.children) {
+                                // hide the children by moving them into _children
+                                d._children = d.children;
+                                d.children = null;
+                            } else {
+                                // bring back the hidden children
+                                d.children = d._children;
+                                d._children = null;
+                            }
+                        }
+                }
+            }
+    }
+
+    function showValueOverlay(val) {
+        $('#valueModalText').html(val);
+        $('#valueModal').modal('show');
+    }
+
+    function updateWithoutDeleting() {
+        parseTree = evaluator.evaluateParseTree();
+        updateObjectAndItsChildren(parseTree, root);
+
+        d3.select("#result").text(root.value);
+    }
+
+    function updateObjectAndItsChildren(newObjectTemp, rootTemp) {
+
+        rootTemp.value = newObjectTemp.value;
+        if (!newObjectTemp.children) return;
+        for (var i = 0; i < newObjectTemp.children.length; i++) {
+            if (rootTemp.children) {
+                updateObjectAndItsChildren(newObjectTemp.children[i], rootTemp.children[i]);
+            } else {
+                if (rootTemp._children) {
+                    updateObjectAndItsChildren(newObjectTemp.children[i], rootTemp._children[i]);
+                }
+            }
+        }
+    }
+
+    function update(source) {
+        var duration = d3.event && d3.event.altKey ? 5000 : 500;
+
+        // Compute the new tree layout.
+        var nodes = tree.nodes(root).reverse();
+
+        // Normalize for fixed-depth.
+        // OK -- why is d.y correlated with the horizontal position here???
+
+        widthPerNode = 110;
+        var body = d3.select("body");
+        var svg = body.select("svg");
+        var widthInPixels = svg.style("width").replace("px", "");
+        widthInPixels = parseInt(widthInPixels);
+        var widthPerNode = widthInPixels / nodes.length;
+        nodes.forEach(function (d) {
+            d.y = d.depth * widthPerNode;
+        });
+
+        d3.select("#result").transition().duration(duration).attr("x", nodes[nodes.length - 1].y - 40).attr("y", function (d) {
+            return nodes[nodes.length - 1].x - 48;
+        });
+
+        // Update the nodes…
+        var node = vis.selectAll("g.node").data(nodes, function (d) {
+            return d.id || (d.id = ++i);
+        });
+
+        // Enter any new nodes at the parent's previous position.
+        var nodeEnter = node.enter().append("svg:g").attr("class", "node").attr("transform", function (d) {
+            return "translate(" + source.y0 + "," + source.x0 + ")";
+        }).on("click", function (d) {
+            toggle(d, true);update(d);
+        });
+
+        nodeEnter.append("svg:circle").attr("r", 1e-6).style("stroke", function (d) {
+            return d.value ? "green" : "red";
+        }).style("fill", function (d) {
+            return d._children ? "grey" : "#fff";
+        });
+
+        nodeEnter.append("svg:text").attr("x", function (d) {
+            return d.children || d._children ? -1 : 17;
+        }).attr("y", function (d) {
+            return d.children || d._children ? 18 : -1;
+        }).attr("dy", ".35em").attr("text-anchor", function (d) {
+            return d.children || d._children ? "middle" : "left";
+        })
+        //      .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
+        .text(function (d) {
+            return d.name;
+        }).style("fill-opacity", 1e-6);
+
+        // Transition nodes to their new position.
+        var nodeUpdate = node.transition().duration(duration).style("stroke", function (d) {
+            return d.value ? "green" : "red";
+        }).attr("transform", function (d) {
+            return "translate(" + d.y + "," + d.x + ")";
+        });
+
+        nodeUpdate.select("circle").attr("r", 8.5).style("stroke", function (d) {
+            return d.value ? "green" : "red";
+        }).style("fill", function (d) {
+            return d._children ? "lightsteelblue" : "#fff";
+        });
+
+        nodeUpdate.select("text").style("fill-opacity", 1);
+
+        // Transition exiting nodes to the parent's new position.
+        var nodeExit = node.exit().transition().duration(duration).attr("transform", function (d) {
+            return "translate(" + source.y + "," + source.x + ")";
+        }).remove();
+
+        nodeExit.select("circle").attr("r", 1e-6);
+
+        nodeExit.select("text").style("fill-opacity", 1e-6);
+
+        // Update the links…
+        var link = vis.selectAll("path.link").data(tree.links(nodes), function (d) {
+            return d.target.id;
+        });
+
+        // Enter any new links at the parent's previous position.
+        link.enter().insert("svg:path", "g").attr("class", "link").attr("d", function (d) {
+            var o = { x: source.x0, y: source.y0 };
+            return diagonal({ source: o, target: o });
+        }).transition().duration(duration).attr("d", diagonal);
+
+        // Transition links to their new position.
+        link.transition().duration(duration).attr("d", diagonal);
+
+        // Transition exiting nodes to the parent's new position.
+        link.exit().transition().duration(duration).attr("d", function (d) {
+            var o = { x: source.x, y: source.y };
+            return diagonal({ source: o, target: o });
+        }).remove();
+
+        // Stash the old positions for transition.
+        nodes.forEach(function (d) {
+            d.x0 = d.x;
+            d.y0 = d.y;
+        });
+    }
+
+    changeMode("boolean");
+    evaluateStatement();
+};
+
+/***/ }),
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1125,11 +1548,11 @@ var _parser = __webpack_require__(3);
 
 var _parser2 = _interopRequireDefault(_parser);
 
-var _numericvisitor = __webpack_require__(8);
+var _numericvisitor = __webpack_require__(9);
 
 var _numericvisitor2 = _interopRequireDefault(_numericvisitor);
 
-var _mathjsonvisitor = __webpack_require__(13);
+var _mathjsonvisitor = __webpack_require__(14);
 
 var _mathjsonvisitor2 = _interopRequireDefault(_mathjsonvisitor);
 
@@ -1185,11 +1608,10 @@ var Mathius = function () {
 
 exports.default = Mathius;
 
-
 window.Mathius = Mathius;
 
 /***/ }),
-/* 10 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1320,95 +1742,7 @@ var BooleanJSONVisitor = function () {
 module.exports = BooleanJSONVisitor;
 
 /***/ }),
-/* 11 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); //import Token from './token';
-//import Symbol from './token';
-
-
-var _lexer = __webpack_require__(2);
-
-var _lexer2 = _interopRequireDefault(_lexer);
-
-var _parser = __webpack_require__(3);
-
-var _parser2 = _interopRequireDefault(_parser);
-
-var _xmlparsetimevisitor = __webpack_require__(15);
-
-var _xmlparsetimevisitor2 = _interopRequireDefault(_xmlparsetimevisitor);
-
-var _xmljsonvisitor = __webpack_require__(14);
-
-var _xmljsonvisitor2 = _interopRequireDefault(_xmljsonvisitor);
-
-var _tokenfactory = __webpack_require__(1);
-
-var _tokenfactory2 = _interopRequireDefault(_tokenfactory);
-
-var _nonterminalfactory = __webpack_require__(0);
-
-var _nonterminalfactory2 = _interopRequireDefault(_nonterminalfactory);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var XMLius = function () {
-  function XMLius(tokenDefinitions, grammarObject) {
-    _classCallCheck(this, XMLius);
-
-    // we set the state so that the parser knows the data type of each of these variables
-    // (in this case, boolean)
-    // and later so that the visitor can evaluate each node to determine if it is true or false.
-    this.state = { "a": false, "b": true, "c": false, "d": true, "e": false, "f": true, "g": false, "h": true, "i": false };
-
-    this.xmlParseTimeVisitor = new _xmlparsetimevisitor2.default();
-
-    this.visitor = new _xmljsonvisitor2.default(this.state);
-    // lay the groundwork for lexical analysis
-    this.lexer = new _lexer2.default(tokenDefinitions);
-    this.parser = new _parser2.default(grammarObject);
-    this.parser.setState(this.state);
-  }
-
-  _createClass(XMLius, [{
-    key: 'parse',
-    value: function parse(sentenceToParse) {
-      try {
-        var sentenceOfTokens = this.lexer.tokenize(sentenceToParse);
-        this.parseTree = this.parser.parse(sentenceOfTokens, this.xmlParseTimeVisitor);
-        return this.evaluateParseTree();
-      } catch (e) {
-        console.error("ERROR PARSING OR EVALUATING:" + e);
-      }
-    }
-  }, {
-    key: 'evaluateParseTree',
-    value: function evaluateParseTree() {
-      var result = this.parseTree[0].visit(this.visitor);
-      return result;
-    }
-  }]);
-
-  return XMLius;
-}();
-
-exports.default = XMLius;
-
-
-window.XMLius = XMLius;
-
-/***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1416,7 +1750,7 @@ window.XMLius = XMLius;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _evaluationvisitor = __webpack_require__(7);
+var _evaluationvisitor = __webpack_require__(8);
 
 var _evaluationvisitor2 = _interopRequireDefault(_evaluationvisitor);
 
@@ -1491,7 +1825,7 @@ var BooleanVisitor = function () {
 module.exports = BooleanVisitor;
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1628,7 +1962,7 @@ var MathJSONVisitor = function () {
 module.exports = MathJSONVisitor;
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1636,7 +1970,7 @@ module.exports = MathJSONVisitor;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _token = __webpack_require__(6);
+var _token = __webpack_require__(7);
 
 var _token2 = _interopRequireDefault(_token);
 
@@ -1871,7 +2205,7 @@ var XMLJSONVisitor = function () {
 module.exports = XMLJSONVisitor;
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1971,7 +2305,7 @@ var XMLParseTimeVisitor = function () {
 module.exports = XMLParseTimeVisitor;
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1993,17 +2327,13 @@ var _parser = __webpack_require__(3);
 
 var _parser2 = _interopRequireDefault(_parser);
 
-var _xmlius = __webpack_require__(11);
+var _xmlparsetimevisitor = __webpack_require__(16);
 
-var _xmlius2 = _interopRequireDefault(_xmlius);
+var _xmlparsetimevisitor2 = _interopRequireDefault(_xmlparsetimevisitor);
 
-var _mathius = __webpack_require__(9);
+var _xmljsonvisitor = __webpack_require__(15);
 
-var _mathius2 = _interopRequireDefault(_mathius);
-
-var _booleanjsonvisitor = __webpack_require__(10);
-
-var _booleanjsonvisitor2 = _interopRequireDefault(_booleanjsonvisitor);
+var _xmljsonvisitor2 = _interopRequireDefault(_xmljsonvisitor);
 
 var _tokenfactory = __webpack_require__(1);
 
@@ -2017,30 +2347,33 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Boolius = function () {
-  function Boolius(tokenDefinitions, grammarObject) {
-    _classCallCheck(this, Boolius);
+var XMLius = function () {
+  function XMLius(tokenDefinitions, grammarObject) {
+    _classCallCheck(this, XMLius);
 
     // we set the state so that the parser knows the data type of each of these variables
     // (in this case, boolean)
     // and later so that the visitor can evaluate each node to determine if it is true or false.
     this.state = { "a": false, "b": true, "c": false, "d": true, "e": false, "f": true, "g": false, "h": true, "i": false };
-    this.visitor = new _booleanjsonvisitor2.default(this.state);
+
+    this.xmlParseTimeVisitor = new _xmlparsetimevisitor2.default();
+
+    this.visitor = new _xmljsonvisitor2.default(this.state);
     // lay the groundwork for lexical analysis
     this.lexer = new _lexer2.default(tokenDefinitions);
     this.parser = new _parser2.default(grammarObject);
     this.parser.setState(this.state);
   }
 
-  _createClass(Boolius, [{
+  _createClass(XMLius, [{
     key: 'parse',
     value: function parse(sentenceToParse) {
       try {
         var sentenceOfTokens = this.lexer.tokenize(sentenceToParse);
-        this.parseTree = this.parser.parse(sentenceOfTokens);
+        this.parseTree = this.parser.parse(sentenceOfTokens, this.xmlParseTimeVisitor);
         return this.evaluateParseTree();
       } catch (e) {
-        alert(e);
+        console.error("ERROR PARSING OR EVALUATING:" + e);
       }
     }
   }, {
@@ -2051,12 +2384,21 @@ var Boolius = function () {
     }
   }]);
 
-  return Boolius;
+  return XMLius;
 }();
 
-exports.default = Boolius;
+exports.default = XMLius;
 
-window.Boolius = Boolius;
+
+window.XMLius = XMLius;
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(5);
+module.exports = __webpack_require__(10);
+
 
 /***/ })
 /******/ ]);
