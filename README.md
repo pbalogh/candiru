@@ -23,6 +23,8 @@ Since D3 consumes JSON, every Parser will need some kind of JSON-creating visito
 ### Parse-Time Visitor
 However, the XML parser also needs a parse-time visitor to enforce XML rules such as the one that opening and closing tags must have the same tag name, etc. And the Boolean statement needs an evaluation-time Visitor in order to know if a variable such as "c" or "a" has a value of true or false at any given moment.)
 
+And the Boolean parser needs a parse-time visitor as well, to handle variables. For example, you can pass it a state object like { a : true, b : false }, and the lexer will see that there are variable identifiers named "a" and "b", but it will need a visitor to do the work of looking inside the state object for a variable by a particular name and to know what type it is ("BOOLEAN", in this case). Typing is important, as the grammar used by the Boolean parser defines reductions for a "BOOLEAN" variables but has nothing for, say, "STRING" or "FLOAT" or "INT" variables.
+
 ## Next steps: 
   - D3 parse tree for XML should have mouseover handling (e.g., if node has "attributes", show in modal)
   - Better display for parsing and lexing errors (using try/catch)
