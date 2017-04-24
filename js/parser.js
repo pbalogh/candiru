@@ -20,6 +20,8 @@ export default class Parser{
     let resolvedSymbols = [];
     while( sentenceOfSymbols.length > 0 )
     {
+      // comments might have been turned into null symbols
+      // in which case we should skip them
       let symbol = sentenceOfSymbols.shift();
       // we only care about tokens
       if( symbol.constructor.name == "Token")
@@ -64,11 +66,14 @@ export default class Parser{
     let arrayOfSymbolsMatchedBeforeMe = [];
     let lengthOfMatch = 0;
     let finished = false;
+    // actually, if our sentence only has one symbol, it may very well be finished already
+    if ( sentenceOfSymbols.length == 1 ) finished = true;
     while( !finished ){
         let madeAMatch = false;
-        //console.log("------- Starting at top of nonterminals list -------" );
+        //console.log("============");
         for( var nonterminal of this.nonterminals )
         {
+
           // we'll go through the input sentence
           // and try to match this nonterminal to the beginning of it.
           // if there's a match, then our nonterminal will be part of the future sentence.
@@ -78,7 +83,7 @@ export default class Parser{
           let traceString = this.getSimpleStringForSentence( sentenceOfSymbols );
           while( sentenceOfSymbols.length > 0 )
           {
-            //console.log("USING nonterminal " + nonterminal.toStringSimple() + " to look at " + traceString );
+//            console.log("USING nonterminal " + nonterminal.toStringSimple() + " to look at " + traceString );
             [lengthOfMatch, arrayOfSymbolsMatchedBeforeMe, sentenceOfSymbols ] =
             nonterminal.matchYourselfToStartOfThisStringAndAddSelfToArray( arrayOfSymbolsMatchedBeforeMe, sentenceOfSymbols, parseTimeVisitor );
 
@@ -88,7 +93,6 @@ export default class Parser{
             // so let's pop a symbol off it and try again.
             if( lengthOfMatch == 0 )
             {
-
               arrayOfSymbolsMatchedBeforeMe.push( sentenceOfSymbols.shift() );
               traceString = this.getSimpleStringForSentence( sentenceOfSymbols );
             }
@@ -122,8 +126,8 @@ export default class Parser{
         {
           let stringAndPosition = this.getLastTokenDescriptionOfSymbol( sentenceOfSymbols[0] );
           let errorString = "\nSyntax error:" + stringAndPosition.string + " at position " + stringAndPosition.position;
+          console.log("sentenceOfSymbols is " + sentenceOfSymbols);
           throw new Error( errorString );
-
           finished = true;
         }
 

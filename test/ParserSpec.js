@@ -223,7 +223,7 @@ describe('Parser', () => {
         [ /(true)(?![a-zA-Z0-9])/i, "TRUE" ],
         [ /(false)(?![a-zA-Z0-9])/i, "FALSE" ],
         [ /[-+]?[0-9]*\.?[0-9]+/, "NUM_LIT" ], // second arg is how this token will present itself to the parser.
-        [ /[a-zA-Z]+/, "IDENT" ] // second arg is how this token will present itself to the parser.
+        [ /[a-zA-Z]+/, "IDENT" ]
       ];
 
   describe('Is handed a grammar', () => {
@@ -244,7 +244,9 @@ describe('Parser', () => {
         [  ["NUMERIC", "+", "NUMERIC" ], "NUMERIC", ["*", "/", "^"] ],
         [  ["NUMERIC", "-", "NUMERIC" ], "NUMERIC", ["*", "/", "^"] ],
         [  ["NUM_LIT" ], "NUMERIC" ],
-        [  ["(", "NUMERIC", ")" ], "NUMERIC" ]
+        [  ["(", "NUMERIC", ")" ], "NUMERIC" ],
+        [  ["BOOLEAN"], "BOOLEAN" ] // in this test, a variable's token is going to be scrutinized to see if it's a boolean
+        // we need to convert a token BOOLEAN into a nonterminal BOOLEAN
       ];
 
 
@@ -260,14 +262,11 @@ describe('Parser', () => {
     });
 
     it('new parser should accept a lexer and grammar and use them to tokenize and parse', () => {
-
       let sentenceOfTokens = lexer.tokenize( "!a" );
       parser.setState( state );
       let parseTree = parser.parse( sentenceOfTokens );
       assert( parseTree.length == 1, "The length of the parseTree should be 1");
       assert( parseTree[0].type == "BOOLEAN", "The only element in the parseTree should be a BOOLEAN statement");
-
-
     });
 
     it('new parser should repeat through sentence until all matches are found', () => {
@@ -278,11 +277,9 @@ describe('Parser', () => {
       let parseTree = parser.parse( sentenceOfTokens );
       assert( parseTree.length == 1, "The length of the parseTree should be 1");
       assert( parseTree[0].type == "BOOLEAN", "The only element in the parseTree should be a BOOLEAN statement but is a " + parseTree[0].type );
-
     });
 
     it('new parser should turn TRUE and FALSE tokens into BOOLEAN symbols', () => {
-
       let sentenceOfTokens = lexer.tokenize( "true || false" );
       assert( sentenceOfTokens.length == 3, "length of sentenceOfTokens should be 3");
       parser.setState( state );
@@ -294,7 +291,6 @@ describe('Parser', () => {
       assert( matchedSymbols[0].type == "BOOLEAN", "The first matched symbol should be a BOOLEAN");
       assert( matchedSymbols[1].type == "|", "The second matched symbol should be | but is " + matchedSymbols[1].type);
       assert( matchedSymbols[2].type == "BOOLEAN", "The third matched symbol should be a BOOLEAN");
-
     });
 
   it('new parser should match and evaluate boolean literals and operators', () => {
@@ -460,6 +456,9 @@ describe('Parser', () => {
     before( () => {
       let grammarObject = [
         [  ["OPENCOMMENT", "WILDCARD", "CLOSECOMMENT" ], "COMMENT" ],
+        // comments will be engulfed by the text of a node
+        // and ignored when the node is asked for its text as a string
+        [  ["COMMENT"], "NODETEXT" ],
         [  ["<", "/", "IDENT", ">" ], "CLOSETAG" ],
         [  ["<", "IDENT", ">" ], "OPENTAG" ],
         [  ["<", "IDENT", "/", ">" ], "XMLNODE" ],
@@ -467,8 +466,21 @@ describe('Parser', () => {
         /* Some recursive self-nesting here */
         [  ["OPENTAGSTART", "IDENT", "=", "\"", "WILDCARD", "\"" ], "OPENTAGSTART" ],
         [  ["OPENTAGSTART", ">"], "OPENTAG" ],
+        // can't have two identifiers in a row, unless we're between an opening and closing tag
+        // a/k/a node.text
+        [  ["IDENT", "IDENT" ], "NODETEXT" ],
+        [  ["IDENT", "NODETEXT" ], "NODETEXT" ],
+        [  ["NODETEXT", "NODETEXT" ], "NODETEXT" ],
+        // let's also have nested nodes engulfed in the NODETEXT
+        [  ["XMLNODE", "NODETEXT" ], "NODETEXT" ],
+        [  ["XMLNODES", "NODETEXT" ], "NODETEXT" ],
+        [  ["NODETEXT", "XMLNODE" ], "NODETEXT" ],
+        [  ["NODETEXT", "XMLNODES" ], "NODETEXT" ],
         [  ["OPENTAG", "CLOSETAG" ], "XMLNODE" ],
-        [  ["OPENTAG", "WILDCARD", "CLOSETAG" ], "XMLNODE" ]
+        [  ["OPENTAG", "NODETEXT", "CLOSETAG" ], "XMLNODE" ],
+        [  ["OPENTAG", "XMLNODE", "CLOSETAG" ], "XMLNODE" ],
+        [  ["XMLNODE", "XMLNODE" ], "XMLNODES" ],
+        [  ["OPENTAG", "XMLNODES", "CLOSETAG" ], "XMLNODE" ]
       ];
 
 
@@ -483,8 +495,8 @@ describe('Parser', () => {
         [  /"/, '"' ],
         [  /'/, '"' ],
         [  /[-+]?[0-9]*\.?[0-9]+/, "NUM_LIT" ],
-        [  /[a-zA-Z]+/, "IDENT" ],
-        [ /[^<]+/, "DIRTYTEXT"]
+        [  /[a-zA-Z]+[a-zA-Z0-9-]*/, "IDENT" ],
+        [ /[^<]+/, "NODETEXT"]
       ];
       lexer = new Lexer( tokenDefinitions );
       parser = new Parser( grammarObject );
@@ -578,18 +590,25 @@ describe('Parser', () => {
     });
 
     it('should handle comments in complex statements!', () => {
-      let sentenceOfTokens = lexer.tokenize( "<top foo='bar'>Hello!<simpleChildNode><!-- some comment --></simpleChildNode>There!<complexNode><simpleChildNode></simpleChildNode><simpleChildNode></simpleChildNode></complexNode></top>");
+      let sentenceOfTokens = lexer.tokenize( `<top foo='bar'>Hello!
+      <simpleChildNode>
+      <!-- some comment -->
+      </simpleChildNode>There!<complexNode>
+      <simpleChildNode></simpleChildNode>
+      <simpleChildNode></simpleChildNode>
+      </complexNode></top>`);
       parser.setState( state );
       let parseTree = parser.parse( sentenceOfTokens, xmlParseTimeVisitor );
-      console.log("parseTree is " + parseTree.toString() );
       assert( parseTree[0].type  == "XMLNODE", "parseTree[0].type should be 'XMLNODE' but is " + parseTree[0].type );
        let json = parseTree[0].visit( xmlJSONVisitor );
       assert( json.name == "top", "json.name should be top but is " + json.name );
       assert( json.children.length == 1, "json.children.length should be 1 but is " + json.children.length );
-      assert( json.children[0].value == "Hello!There!", "First child should have value 'Hello!There!' but has " + json.children[0].value );
+      let trimmedIdeal = "Hello!There!";
+      let trimmedActual = json.children[0].value.replace("\n", "").replace( / /g, '');
+      assert( trimmedActual == trimmedIdeal, `First child should have value ${trimmedIdeal} but has ` + trimmedActual + " of length " + trimmedActual.length );
     });
 
-    it.only('should catch improper nesting', () => {
+    it('should catch improper nesting', () => {
        let sentenceOfTokens = lexer.tokenize( "<top>Hello!<simpleChildNode>There!<complexNode></top></simpleChildNode>");
       parser.setState( state );
       // parsing should throw an error
@@ -602,6 +621,42 @@ describe('Parser', () => {
       {
         assert(true == true );
       }
+    });
+
+    it('should parse HTML with alphanum node names', () => {
+      let html = `<div1 class="hintwrapper">
+        </div1>`;
+        let sentenceOfTokens = lexer.tokenize( html );
+        parser.setState( state );
+        let parseTree = parser.parse( sentenceOfTokens, xmlParseTimeVisitor );
+    });
+
+    it('should parse HTML with nested of same-named nodes', () => {
+      let html = `<div class="hintwrapper">
+        <div class="hint">Click operators to expand or collapse. Click leaf nodes to toggle true/false.</div>
+        </div>`;
+        let sentenceOfTokens = lexer.tokenize( html );
+        parser.setState( state );
+        let parseTree = parser.parse( sentenceOfTokens, xmlParseTimeVisitor );
+    });
+
+    it('should parse HTML', () => {
+      let html = `<div class="hintwrapper">
+	        <div class="hint">Click operators to expand or collapse. Click leaf nodes to toggle true/false.</div>
+
+            <div class="styled-select green semi-square">
+            <!--
+                <select id="modeSelect">
+                    <option>Evaluate Boolean Expressions</option>
+                    <option>Evaluate XML</option>
+                    <option>Arithmetic Operator Ordering (PEMDAS)</option>
+                </select>
+            -->
+            </div>
+        </div>`;
+        let sentenceOfTokens = lexer.tokenize( html );
+        parser.setState( state );
+        let parseTree = parser.parse( sentenceOfTokens, xmlParseTimeVisitor );
     });
 
     it('should catch illegal node content', () => {

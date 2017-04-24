@@ -156,7 +156,6 @@ class XMLJSONVisitor{
 
         if( nonterminalOrToken.type == "COMMENT")
         {
-          console.error("COMMENT is " + nonterminalOrToken.toString() );
           let commentstring = "";
           for(var kid of nonterminalOrToken.symbolsMatched )
           {
@@ -164,6 +163,17 @@ class XMLJSONVisitor{
             commentstring += this.getValue( kid );
           }
             return commentstring;
+        }
+
+        if( nonterminalOrToken.type == "NODETEXT")
+        {
+          let contentstring = "";
+          for(var kid of nonterminalOrToken.symbolsMatched )
+          {
+            if( ( kid.type == "NODETEXT" )  || ( kid.type == "IDENT" )  )
+              contentstring += this.getValue( kid );
+          }
+          return contentstring;
         }
 
         throw new Error("XMLJSONVISITOR UNKNOWN LENGTH OF SYMBOLSMATCHED for " + nonterminalOrToken.type + ":" + JSON.stringify( symbolsMatched ));

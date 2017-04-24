@@ -12,7 +12,7 @@ export default class Nonterminal extends Symbol{
     }
 
     toStringSimple(){
-      return this.seriesOfSymbolsIMustMatch.join( ' ' );
+      return this.type + "(" + this.seriesOfSymbolsIMustMatch.join( ' ' ) + ")";
     }
 
     toString(){
@@ -39,23 +39,13 @@ export default class Nonterminal extends Symbol{
 
     matchYourselfToStartOfThisStringAndAddSelfToArray( arrayOfSymbolsMatchedBeforeMe, sentenceOfSymbolsToMatch, parseTimeVisitor ){
 
-      let care = false;
-
-      if( this.toStringSimple() == "BOOLEAN & BOOLEAN" )
-      {
-        //care = true;
-      }
       // clone it so we don't destroy the original in case we're only a partial match
 
       let sentenceOfSymbolsToMatchClone = sentenceOfSymbolsToMatch.slice(0);
 
-      if( care ) console.log("sentenceOfSymbolsToMatchClone is " + sentenceOfSymbolsToMatchClone );
-
       // same with ours
 
       let seriesOfSymbolsIMustMatchClone = this.seriesOfSymbolsIMustMatch.slice(0);
-
-      if( care ) console.log("seriesOfSymbolsIMustMatchClone is " + seriesOfSymbolsIMustMatchClone );
 
       this.seriesOfSymbolsIAbsorbedAndReplaced = [];
 
@@ -67,12 +57,8 @@ export default class Nonterminal extends Symbol{
 
       while( seriesOfSymbolsIMustMatchClone.length > 0 )
       {
-        if( care ) console.log("at top of seriesOfSymbolsIMustMatchClone.length loop, where seriesOfSymbolsIMustMatchClone.length is " + seriesOfSymbolsIMustMatchClone.length );
         let mySymbol = seriesOfSymbolsIMustMatchClone.shift();
         let theirSymbol = sentenceOfSymbolsToMatchClone.shift();
-
-        if( care ) console.log("mySymbol is " + mySymbol );
-        if( care ) console.log("theirSymbol is " + theirSymbol );
 
         // if they ran out of symbols, then we're obviously not a match. UNLESS we were in wildcard mode.
         if( ! theirSymbol )
@@ -144,13 +130,11 @@ export default class Nonterminal extends Symbol{
           }
           else
           {
-            if( care ) console.log("OK, we matched symbols and done is " + done );
             this.seriesOfSymbolsIAbsorbedAndReplaced.push( theirSymbol );
           }
         }
       }// bottom of seriesOfSymbolsIMustMatchClone.length loop
 
-      if( care ) console.log("ALL IS WELL SO FAR");
       // we made it through -- matched everything we needed to -- but maybe there's a problem after all...
       // now, there's an edge case -- good for operator precedence enforcement
       // -- the lookahead tokens.
@@ -163,7 +147,6 @@ export default class Nonterminal extends Symbol{
 
       if( this.lookaheadTokensToAvoid )
       {
-        if(care) console.log("LOOKAHEADS!!!" + this.lookaheadTokensToAvoid);
         if( sentenceOfSymbolsToMatchClone.length > 0 )
         {
           let theirNextSymbol = sentenceOfSymbolsToMatchClone[0];

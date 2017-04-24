@@ -42,4 +42,3 @@ export default class Mathius{
     return result;
   }
 }
-window.Mathius = Mathius;

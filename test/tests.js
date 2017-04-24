@@ -1,7 +1,8 @@
-var booleanTestingStatements = ["a && b",
+var booleanTestingStatements = [
+"a",
+"a && b",
 "a || b",
 "!a && !b",
-"a",
 "!a",
 "   !  a",
 "  ( !  (a) )",

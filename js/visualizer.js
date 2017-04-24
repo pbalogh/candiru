@@ -1,5 +1,7 @@
 
-import Boolius from './boolius'; // which in turn imports all the other classes
+import Boolius from './boolius'; // which in turn imports all the classes it depends upon
+import XMLius from './xmlius';
+import Mathius from './mathius';
 
 window.onload = function(){
   console.log("visualizer window.onLoad");
