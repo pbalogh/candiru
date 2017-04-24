@@ -79,7 +79,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _nonterminal = __webpack_require__(6);
+var _nonterminal = __webpack_require__(7);
 
 var _nonterminal2 = _interopRequireDefault(_nonterminal);
 
@@ -149,7 +149,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _token = __webpack_require__(7);
+var _token = __webpack_require__(8);
 
 var _token2 = _interopRequireDefault(_token);
 
@@ -331,7 +331,7 @@ var _symbol = __webpack_require__(4);
 
 var _symbol2 = _interopRequireDefault(_symbol);
 
-var _nonterminal = __webpack_require__(6);
+var _nonterminal = __webpack_require__(7);
 
 var _nonterminal2 = _interopRequireDefault(_nonterminal);
 
@@ -367,6 +367,8 @@ var Parser = function () {
     value: function resolveIdentifiersToTypes(sentenceOfSymbols) {
       var resolvedSymbols = [];
       while (sentenceOfSymbols.length > 0) {
+        // comments might have been turned into null symbols
+        // in which case we should skip them
         var symbol = sentenceOfSymbols.shift();
         // we only care about tokens
         if (symbol.constructor.name == "Token") {
@@ -429,9 +431,11 @@ var Parser = function () {
       var arrayOfSymbolsMatchedBeforeMe = [];
       var lengthOfMatch = 0;
       var finished = false;
+      // actually, if our sentence only has one symbol, it may very well be finished already
+      if (sentenceOfSymbols.length == 1) finished = true;
       while (!finished) {
         var madeAMatch = false;
-        //console.log("------- Starting at top of nonterminals list -------" );
+        //console.log("============");
         var _iteratorNormalCompletion2 = true;
         var _didIteratorError2 = false;
         var _iteratorError2 = undefined;
@@ -439,6 +443,7 @@ var Parser = function () {
         try {
           for (var _iterator2 = this.nonterminals[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
             var nonterminal = _step2.value;
+
 
             // we'll go through the input sentence
             // and try to match this nonterminal to the beginning of it.
@@ -454,7 +459,7 @@ var Parser = function () {
               // otherwise, we didn't match the beginning of the input sentence,
               // so let's pop a symbol off it and try again.
               var _nonterminal$matchYou = nonterminal.matchYourselfToStartOfThisStringAndAddSelfToArray(arrayOfSymbolsMatchedBeforeMe, sentenceOfSymbols, parseTimeVisitor);
-              //console.log("USING nonterminal " + nonterminal.toStringSimple() + " to look at " + traceString );
+              //            console.log("USING nonterminal " + nonterminal.toStringSimple() + " to look at " + traceString );
 
 
               var _nonterminal$matchYou2 = _slicedToArray(_nonterminal$matchYou, 3);
@@ -463,7 +468,6 @@ var Parser = function () {
               arrayOfSymbolsMatchedBeforeMe = _nonterminal$matchYou2[1];
               sentenceOfSymbols = _nonterminal$matchYou2[2];
               if (lengthOfMatch == 0) {
-
                 arrayOfSymbolsMatchedBeforeMe.push(sentenceOfSymbols.shift());
                 traceString = this.getSimpleStringForSentence(sentenceOfSymbols);
               } else {
@@ -507,8 +511,8 @@ var Parser = function () {
         if (!madeAMatch) {
           var stringAndPosition = this.getLastTokenDescriptionOfSymbol(sentenceOfSymbols[0]);
           var errorString = "\nSyntax error:" + stringAndPosition.string + " at position " + stringAndPosition.position;
+          console.log("sentenceOfSymbols is " + sentenceOfSymbols);
           throw new Error(errorString);
-
           finished = true;
         }
 
@@ -631,15 +635,15 @@ var _parser = __webpack_require__(3);
 
 var _parser2 = _interopRequireDefault(_parser);
 
-var _xmlius = __webpack_require__(17);
+var _xmlius = __webpack_require__(11);
 
 var _xmlius2 = _interopRequireDefault(_xmlius);
 
-var _mathius = __webpack_require__(11);
+var _mathius = __webpack_require__(6);
 
 var _mathius2 = _interopRequireDefault(_mathius);
 
-var _booleanjsonvisitor = __webpack_require__(12);
+var _booleanjsonvisitor = __webpack_require__(13);
 
 var _booleanjsonvisitor2 = _interopRequireDefault(_booleanjsonvisitor);
 
@@ -707,6 +711,89 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); //import Token from './token';
+//import Symbol from './token';
+
+
+var _lexer = __webpack_require__(2);
+
+var _lexer2 = _interopRequireDefault(_lexer);
+
+var _parser = __webpack_require__(3);
+
+var _parser2 = _interopRequireDefault(_parser);
+
+var _numericvisitor = __webpack_require__(10);
+
+var _numericvisitor2 = _interopRequireDefault(_numericvisitor);
+
+var _mathjsonvisitor = __webpack_require__(15);
+
+var _mathjsonvisitor2 = _interopRequireDefault(_mathjsonvisitor);
+
+var _tokenfactory = __webpack_require__(1);
+
+var _tokenfactory2 = _interopRequireDefault(_tokenfactory);
+
+var _nonterminalfactory = __webpack_require__(0);
+
+var _nonterminalfactory2 = _interopRequireDefault(_nonterminalfactory);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Mathius = function () {
+  function Mathius(tokenDefinitions, grammarObject) {
+    _classCallCheck(this, Mathius);
+
+    // we set the state so that the parser knows the data type of each of these variables
+    // (in this case, boolean)
+    // and later so that the visitor can evaluate each node to determine if it is true or false.
+    this.state = { "a": false, "b": true, "c": false, "d": true, "e": false, "f": true, "g": false, "h": true, "i": false };
+
+    this.visitor = new _mathjsonvisitor2.default(this.state);
+    // lay the groundwork for lexical analysis
+    this.lexer = new _lexer2.default(tokenDefinitions);
+    this.parser = new _parser2.default(grammarObject);
+    this.parser.setState(this.state);
+  }
+
+  _createClass(Mathius, [{
+    key: 'parse',
+    value: function parse(sentenceToParse) {
+      try {
+        var sentenceOfTokens = this.lexer.tokenize(sentenceToParse);
+        this.parseTree = this.parser.parse(sentenceOfTokens);
+        return this.evaluateParseTree();
+      } catch (e) {
+        console.error("ERROR PARSING OR EVALUATING:" + e);
+      }
+    }
+  }, {
+    key: 'evaluateParseTree',
+    value: function evaluateParseTree() {
+      var result = this.parseTree[0].visit(this.visitor);
+      return result;
+    }
+  }]);
+
+  return Mathius;
+}();
+
+exports.default = Mathius;
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _symbol = __webpack_require__(4);
@@ -740,7 +827,7 @@ var Nonterminal = function (_Symbol2) {
   _createClass(Nonterminal, [{
     key: 'toStringSimple',
     value: function toStringSimple() {
-      return this.seriesOfSymbolsIMustMatch.join(' ');
+      return this.type + "(" + this.seriesOfSymbolsIMustMatch.join(' ') + ")";
     }
   }, {
     key: 'toString',
@@ -783,22 +870,13 @@ var Nonterminal = function (_Symbol2) {
     key: 'matchYourselfToStartOfThisStringAndAddSelfToArray',
     value: function matchYourselfToStartOfThisStringAndAddSelfToArray(arrayOfSymbolsMatchedBeforeMe, sentenceOfSymbolsToMatch, parseTimeVisitor) {
 
-      var care = false;
-
-      if (this.toStringSimple() == "BOOLEAN & BOOLEAN") {}
-      //care = true;
-
       // clone it so we don't destroy the original in case we're only a partial match
 
       var sentenceOfSymbolsToMatchClone = sentenceOfSymbolsToMatch.slice(0);
 
-      if (care) console.log("sentenceOfSymbolsToMatchClone is " + sentenceOfSymbolsToMatchClone);
-
       // same with ours
 
       var seriesOfSymbolsIMustMatchClone = this.seriesOfSymbolsIMustMatch.slice(0);
-
-      if (care) console.log("seriesOfSymbolsIMustMatchClone is " + seriesOfSymbolsIMustMatchClone);
 
       this.seriesOfSymbolsIAbsorbedAndReplaced = [];
 
@@ -809,12 +887,8 @@ var Nonterminal = function (_Symbol2) {
       var symbolThatBreaksWildcard = null;
 
       while (seriesOfSymbolsIMustMatchClone.length > 0) {
-        if (care) console.log("at top of seriesOfSymbolsIMustMatchClone.length loop, where seriesOfSymbolsIMustMatchClone.length is " + seriesOfSymbolsIMustMatchClone.length);
         var mySymbol = seriesOfSymbolsIMustMatchClone.shift();
         var theirSymbol = sentenceOfSymbolsToMatchClone.shift();
-
-        if (care) console.log("mySymbol is " + mySymbol);
-        if (care) console.log("theirSymbol is " + theirSymbol);
 
         // if they ran out of symbols, then we're obviously not a match. UNLESS we were in wildcard mode.
         if (!theirSymbol) {
@@ -871,13 +945,11 @@ var Nonterminal = function (_Symbol2) {
           if (theirSymbol.type != mySymbol) {
             return [0, arrayOfSymbolsMatchedBeforeMe, sentenceOfSymbolsToMatch];
           } else {
-            if (care) console.log("OK, we matched symbols and done is " + done);
             this.seriesOfSymbolsIAbsorbedAndReplaced.push(theirSymbol);
           }
         }
       } // bottom of seriesOfSymbolsIMustMatchClone.length loop
 
-      if (care) console.log("ALL IS WELL SO FAR");
       // we made it through -- matched everything we needed to -- but maybe there's a problem after all...
       // now, there's an edge case -- good for operator precedence enforcement
       // -- the lookahead tokens.
@@ -889,7 +961,6 @@ var Nonterminal = function (_Symbol2) {
       // and that has higher precedence than +
 
       if (this.lookaheadTokensToAvoid) {
-        if (care) console.log("LOOKAHEADS!!!" + this.lookaheadTokensToAvoid);
         if (sentenceOfSymbolsToMatchClone.length > 0) {
           var theirNextSymbol = sentenceOfSymbolsToMatchClone[0];
           if (this.lookaheadTokensToAvoid.indexOf(theirNextSymbol.type) > -1) {
@@ -937,7 +1008,7 @@ var Nonterminal = function (_Symbol2) {
 exports.default = Nonterminal;
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1040,7 +1111,7 @@ var Token = function (_Symbol2) {
 exports.default = Token;
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1048,11 +1119,11 @@ exports.default = Token;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _booleanvisitor = __webpack_require__(13);
+var _booleanvisitor = __webpack_require__(14);
 
 var _booleanvisitor2 = _interopRequireDefault(_booleanvisitor);
 
-var _numericvisitor = __webpack_require__(9);
+var _numericvisitor = __webpack_require__(10);
 
 var _numericvisitor2 = _interopRequireDefault(_numericvisitor);
 
@@ -1102,7 +1173,7 @@ var EvaluationVisitor = function () {
 module.exports = EvaluationVisitor;
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1110,7 +1181,7 @@ module.exports = EvaluationVisitor;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _evaluationvisitor = __webpack_require__(8);
+var _evaluationvisitor = __webpack_require__(9);
 
 var _evaluationvisitor2 = _interopRequireDefault(_evaluationvisitor);
 
@@ -1191,7 +1262,92 @@ var NumericVisitor = function () {
 module.exports = NumericVisitor;
 
 /***/ }),
-/* 10 */
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); //import Token from './token';
+//import Symbol from './token';
+
+
+var _lexer = __webpack_require__(2);
+
+var _lexer2 = _interopRequireDefault(_lexer);
+
+var _parser = __webpack_require__(3);
+
+var _parser2 = _interopRequireDefault(_parser);
+
+var _xmlparsetimevisitor = __webpack_require__(17);
+
+var _xmlparsetimevisitor2 = _interopRequireDefault(_xmlparsetimevisitor);
+
+var _xmljsonvisitor = __webpack_require__(16);
+
+var _xmljsonvisitor2 = _interopRequireDefault(_xmljsonvisitor);
+
+var _tokenfactory = __webpack_require__(1);
+
+var _tokenfactory2 = _interopRequireDefault(_tokenfactory);
+
+var _nonterminalfactory = __webpack_require__(0);
+
+var _nonterminalfactory2 = _interopRequireDefault(_nonterminalfactory);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var XMLius = function () {
+  function XMLius(tokenDefinitions, grammarObject) {
+    _classCallCheck(this, XMLius);
+
+    // we set the state so that the parser knows the data type of each of these variables
+    // (in this case, boolean)
+    // and later so that the visitor can evaluate each node to determine if it is true or false.
+    this.state = { "a": false, "b": true, "c": false, "d": true, "e": false, "f": true, "g": false, "h": true, "i": false };
+
+    this.xmlParseTimeVisitor = new _xmlparsetimevisitor2.default();
+
+    this.visitor = new _xmljsonvisitor2.default(this.state);
+    // lay the groundwork for lexical analysis
+    this.lexer = new _lexer2.default(tokenDefinitions);
+    this.parser = new _parser2.default(grammarObject);
+    this.parser.setState(this.state);
+  }
+
+  _createClass(XMLius, [{
+    key: 'parse',
+    value: function parse(sentenceToParse) {
+      try {
+        var sentenceOfTokens = this.lexer.tokenize(sentenceToParse);
+        this.parseTree = this.parser.parse(sentenceOfTokens, this.xmlParseTimeVisitor);
+        return this.evaluateParseTree();
+      } catch (e) {
+        console.error("ERROR PARSING OR EVALUATING:" + e);
+      }
+    }
+  }, {
+    key: 'evaluateParseTree',
+    value: function evaluateParseTree() {
+      var result = this.parseTree[0].visit(this.visitor);
+      return result;
+    }
+  }]);
+
+  return XMLius;
+}();
+
+exports.default = XMLius;
+
+/***/ }),
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1201,10 +1357,17 @@ var _boolius = __webpack_require__(5);
 
 var _boolius2 = _interopRequireDefault(_boolius);
 
+var _xmlius = __webpack_require__(11);
+
+var _xmlius2 = _interopRequireDefault(_xmlius);
+
+var _mathius = __webpack_require__(6);
+
+var _mathius2 = _interopRequireDefault(_mathius);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// which in turn imports all the other classes
-
+// which in turn imports all the classes it depends upon
 window.onload = function () {
     console.log("visualizer window.onLoad");
     d3.select('#modeSelect').on('change', function (e) {
@@ -1224,7 +1387,7 @@ window.onload = function () {
                 var tokenDefinitions = [[/\s+/, "", IGNORE], // ignore whitespace
                 [/\^/, "^"], // this is the escaped form of ^
                 [/\(/, "("], [/\)/, ")"], [/\+/, "+"], [/-/, "-"], [/\*/, "*"], [/\//, "/"], [/[-+]?[0-9]*\.?[0-9]+/, "NUM_LIT"], [/[a-zA-Z]+/, "IDENT"], [/.+/, "DIRTYTEXT"]];
-                makeEvaluatorAndInitialize(new Mathius(tokenDefinitions, grammarObject), "1 + 2 ^ (5 - 2) * 3", "Click operators to expand or collapse.");
+                makeEvaluatorAndInitialize(new _mathius2.default(tokenDefinitions, grammarObject), "1 + 2 ^ (5 - 2) * 3", "Click operators to expand or collapse.");
             }
         } else if (newMode.indexOf('boolean') > -1) {
             // the user wants to look at boolean expressions.
@@ -1252,7 +1415,7 @@ window.onload = function () {
                 var _IGNORE2 = true;
 
                 var _tokenDefinitions2 = [[/\s+/, "", _IGNORE2], [/<!--/, 'OPENCOMMENT'], [/-->/, 'CLOSECOMMENT'], [/\//, "/"], [/>/, ">"], [/</, "<"], [/=/, "="], [/"/, '"'], [/'/, '"'], [/[-+]?[0-9]*\.?[0-9]+/, "NUM_LIT"], [/[a-zA-Z]+/, "IDENT"], [/[^<]+/, "DIRTYTEXT"]];
-                makeEvaluatorAndInitialize(new XMLius(_tokenDefinitions2, grammarObject), "<top foo='bar'>Hello!<simpleChildNode></simpleChildNode>There!<complexNode><simpleChildNode></simpleChildNode><simpleChildNode></simpleChildNode></complexNode></top>", "Click nodes to expand or collapse. Click nodes to see attributes and/or content.");
+                makeEvaluatorAndInitialize(new _xmlius2.default(_tokenDefinitions2, grammarObject), "<top foo='bar'>Hello!<simpleChildNode></simpleChildNode>There!<complexNode><simpleChildNode></simpleChildNode><simpleChildNode></simpleChildNode></complexNode></top>", "Click nodes to expand or collapse. Click nodes to see attributes and/or content.");
             }
         }
     }
@@ -1525,92 +1688,7 @@ window.onload = function () {
 };
 
 /***/ }),
-/* 11 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); //import Token from './token';
-//import Symbol from './token';
-
-
-var _lexer = __webpack_require__(2);
-
-var _lexer2 = _interopRequireDefault(_lexer);
-
-var _parser = __webpack_require__(3);
-
-var _parser2 = _interopRequireDefault(_parser);
-
-var _numericvisitor = __webpack_require__(9);
-
-var _numericvisitor2 = _interopRequireDefault(_numericvisitor);
-
-var _mathjsonvisitor = __webpack_require__(14);
-
-var _mathjsonvisitor2 = _interopRequireDefault(_mathjsonvisitor);
-
-var _tokenfactory = __webpack_require__(1);
-
-var _tokenfactory2 = _interopRequireDefault(_tokenfactory);
-
-var _nonterminalfactory = __webpack_require__(0);
-
-var _nonterminalfactory2 = _interopRequireDefault(_nonterminalfactory);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var Mathius = function () {
-  function Mathius(tokenDefinitions, grammarObject) {
-    _classCallCheck(this, Mathius);
-
-    // we set the state so that the parser knows the data type of each of these variables
-    // (in this case, boolean)
-    // and later so that the visitor can evaluate each node to determine if it is true or false.
-    this.state = { "a": false, "b": true, "c": false, "d": true, "e": false, "f": true, "g": false, "h": true, "i": false };
-
-    this.visitor = new _mathjsonvisitor2.default(this.state);
-    // lay the groundwork for lexical analysis
-    this.lexer = new _lexer2.default(tokenDefinitions);
-    this.parser = new _parser2.default(grammarObject);
-    this.parser.setState(this.state);
-  }
-
-  _createClass(Mathius, [{
-    key: 'parse',
-    value: function parse(sentenceToParse) {
-      try {
-        var sentenceOfTokens = this.lexer.tokenize(sentenceToParse);
-        this.parseTree = this.parser.parse(sentenceOfTokens);
-        return this.evaluateParseTree();
-      } catch (e) {
-        console.error("ERROR PARSING OR EVALUATING:" + e);
-      }
-    }
-  }, {
-    key: 'evaluateParseTree',
-    value: function evaluateParseTree() {
-      var result = this.parseTree[0].visit(this.visitor);
-      return result;
-    }
-  }]);
-
-  return Mathius;
-}();
-
-exports.default = Mathius;
-
-window.Mathius = Mathius;
-
-/***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1741,7 +1819,7 @@ var BooleanJSONVisitor = function () {
 module.exports = BooleanJSONVisitor;
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1749,7 +1827,7 @@ module.exports = BooleanJSONVisitor;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _evaluationvisitor = __webpack_require__(8);
+var _evaluationvisitor = __webpack_require__(9);
 
 var _evaluationvisitor2 = _interopRequireDefault(_evaluationvisitor);
 
@@ -1824,7 +1902,7 @@ var BooleanVisitor = function () {
 module.exports = BooleanVisitor;
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1961,7 +2039,7 @@ var MathJSONVisitor = function () {
 module.exports = MathJSONVisitor;
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1969,7 +2047,7 @@ module.exports = MathJSONVisitor;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _token = __webpack_require__(7);
+var _token = __webpack_require__(8);
 
 var _token2 = _interopRequireDefault(_token);
 
@@ -2148,7 +2226,6 @@ var XMLJSONVisitor = function () {
         }
 
         if (nonterminalOrToken.type == "COMMENT") {
-          console.error("COMMENT is " + nonterminalOrToken.toString());
           var commentstring = "";
           var _iteratorNormalCompletion2 = true;
           var _didIteratorError2 = false;
@@ -2179,6 +2256,36 @@ var XMLJSONVisitor = function () {
           return commentstring;
         }
 
+        if (nonterminalOrToken.type == "NODETEXT") {
+          var contentstring = "";
+          var _iteratorNormalCompletion3 = true;
+          var _didIteratorError3 = false;
+          var _iteratorError3 = undefined;
+
+          try {
+            for (var _iterator3 = nonterminalOrToken.symbolsMatched[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+              var kid = _step3.value;
+
+              if (kid.type == "NODETEXT" || kid.type == "IDENT") contentstring += this.getValue(kid);
+            }
+          } catch (err) {
+            _didIteratorError3 = true;
+            _iteratorError3 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                _iterator3.return();
+              }
+            } finally {
+              if (_didIteratorError3) {
+                throw _iteratorError3;
+              }
+            }
+          }
+
+          return contentstring.replace("\n", "").replace(/ /g, '');
+        }
+
         throw new Error("XMLJSONVISITOR UNKNOWN LENGTH OF SYMBOLSMATCHED for " + nonterminalOrToken.type + ":" + JSON.stringify(symbolsMatched));
       } else // it's a token
         {
@@ -2204,7 +2311,7 @@ var XMLJSONVisitor = function () {
 module.exports = XMLJSONVisitor;
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2304,99 +2411,11 @@ var XMLParseTimeVisitor = function () {
 module.exports = XMLParseTimeVisitor;
 
 /***/ }),
-/* 17 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); //import Token from './token';
-//import Symbol from './token';
-
-
-var _lexer = __webpack_require__(2);
-
-var _lexer2 = _interopRequireDefault(_lexer);
-
-var _parser = __webpack_require__(3);
-
-var _parser2 = _interopRequireDefault(_parser);
-
-var _xmlparsetimevisitor = __webpack_require__(16);
-
-var _xmlparsetimevisitor2 = _interopRequireDefault(_xmlparsetimevisitor);
-
-var _xmljsonvisitor = __webpack_require__(15);
-
-var _xmljsonvisitor2 = _interopRequireDefault(_xmljsonvisitor);
-
-var _tokenfactory = __webpack_require__(1);
-
-var _tokenfactory2 = _interopRequireDefault(_tokenfactory);
-
-var _nonterminalfactory = __webpack_require__(0);
-
-var _nonterminalfactory2 = _interopRequireDefault(_nonterminalfactory);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var XMLius = function () {
-  function XMLius(tokenDefinitions, grammarObject) {
-    _classCallCheck(this, XMLius);
-
-    // we set the state so that the parser knows the data type of each of these variables
-    // (in this case, boolean)
-    // and later so that the visitor can evaluate each node to determine if it is true or false.
-    this.state = { "a": false, "b": true, "c": false, "d": true, "e": false, "f": true, "g": false, "h": true, "i": false };
-
-    this.xmlParseTimeVisitor = new _xmlparsetimevisitor2.default();
-
-    this.visitor = new _xmljsonvisitor2.default(this.state);
-    // lay the groundwork for lexical analysis
-    this.lexer = new _lexer2.default(tokenDefinitions);
-    this.parser = new _parser2.default(grammarObject);
-    this.parser.setState(this.state);
-  }
-
-  _createClass(XMLius, [{
-    key: 'parse',
-    value: function parse(sentenceToParse) {
-      try {
-        var sentenceOfTokens = this.lexer.tokenize(sentenceToParse);
-        this.parseTree = this.parser.parse(sentenceOfTokens, this.xmlParseTimeVisitor);
-        return this.evaluateParseTree();
-      } catch (e) {
-        console.error("ERROR PARSING OR EVALUATING:" + e);
-      }
-    }
-  }, {
-    key: 'evaluateParseTree',
-    value: function evaluateParseTree() {
-      var result = this.parseTree[0].visit(this.visitor);
-      return result;
-    }
-  }]);
-
-  return XMLius;
-}();
-
-exports.default = XMLius;
-
-
-window.XMLius = XMLius;
-
-/***/ }),
 /* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(5);
-module.exports = __webpack_require__(10);
+module.exports = __webpack_require__(12);
 
 
 /***/ })
