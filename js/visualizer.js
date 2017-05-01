@@ -4,7 +4,6 @@ import XMLius from './xmlius';
 import Mathius from './mathius';
 
 window.onload = function(){
-  console.log("visualizer window.onLoad");
     d3.select('#modeSelect').on('change', function(e){
         var selectedMode = d3.select('#modeSelect').node().value.toLowerCase();
         changeMode( selectedMode );
