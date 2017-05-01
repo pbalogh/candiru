@@ -1369,7 +1369,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 // which in turn imports all the classes it depends upon
 window.onload = function () {
-    console.log("visualizer window.onLoad");
     d3.select('#modeSelect').on('change', function (e) {
         var selectedMode = d3.select('#modeSelect').node().value.toLowerCase();
         changeMode(selectedMode);
@@ -2283,7 +2282,7 @@ var XMLJSONVisitor = function () {
             }
           }
 
-          return contentstring.replace("\n", "").replace(/ /g, '');
+          return contentstring;
         }
 
         throw new Error("XMLJSONVISITOR UNKNOWN LENGTH OF SYMBOLSMATCHED for " + nonterminalOrToken.type + ":" + JSON.stringify(symbolsMatched));
