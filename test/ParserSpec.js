@@ -640,7 +640,7 @@ describe('Parser', () => {
         let parseTree = parser.parse( sentenceOfTokens, xmlParseTimeVisitor );
     });
 
-    it.only('should parse HTML and get JSON from it', () => {
+    it('should parse HTML and get JSON from it', () => {
 
       let html = `<div class="hintwrapper">
 	        <div class="hint">Click operators to expand or collapse. Click leaf nodes to toggle true/false.</div>
@@ -657,15 +657,14 @@ describe('Parser', () => {
         </div>`;
 
         let sentenceOfTokens = lexer.tokenize( html );
-        console.log("sentenceOfTokens is " + sentenceOfTokens );
         parser.setState( state );
         let parseTree = parser.parse( sentenceOfTokens, xmlParseTimeVisitor );
         let result = parseTree[0].visit( xmlJSONVisitor );
-        assert( result.children.length == 1, "result.children.length should be 1 but is " + result.children.length );
+        assert( result.children.length == 2, "result.children.length should be 1 but is " + result.children.length );
         // nodelist
-        assert( result.children[0].children.length == 2,
+        assert( result.children[0].children.length == 1,
           "result.children[0].children.length should be 1 but is " + result.children[0].children.length );
-        let secondDiv = result.children[0].children[0];
+        let secondDiv = result.children[0];
         // nodetext is the first child of a div
          assert( secondDiv.children[0].value == "Click operators to expand or collapse. Click leaf nodes to toggle true/false." ,
          "value of second div should be 'Click operators to expand or collapse. Click leaf nodes to toggle true/false.' but is " +

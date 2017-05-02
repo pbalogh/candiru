@@ -27,14 +27,11 @@ export default class XMLius{
   }
 
   parse( sentenceToParse ){
-    console.error("XMLius parse " + sentenceToParse );
     try
     {
       let sentenceOfTokens = this.lexer.tokenize( sentenceToParse );
       this.parser.setState( this.state );
-      console.log("XML sentenceOfTokens is " + sentenceOfTokens );
       this.parseTree = this.parser.parse( sentenceOfTokens, this.xmlParseTimeVisitor );
-      console.log("XML parseTree is " + this.parseTree );
       return this.evaluateParseTree();
     }
     catch( e )

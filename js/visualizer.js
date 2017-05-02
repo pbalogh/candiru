@@ -137,7 +137,8 @@ window.onload = function(){
                 ];
 
                 makeEvaluatorAndInitialize( new XMLius( tokenDefinitions, grammarObject ),
-                `<div class="hintwrapper"><div class="hint">Click operators to expand or collapse. Click leaf nodes to toggle true/false.</div><div class="styled-select green semi-square" style="bold"></div></div>`);
+                `<div class="hintwrapper"><div class="hint">Click operators to expand or collapse. Click leaf nodes to toggle true/false.</div><div class="styled-select green semi-square" style="bold"></div></div>`,
+                "Mouseover nodes to see attributes. Click nodetext to see content.");
             }
         }
     }
@@ -207,7 +208,6 @@ function evaluateStatement()
 {
     var statement = d3.select("#statement").node().value;
 	parseTree = evaluator.parse( statement );
-    console.log("parseTree is " + JSON.stringify( parseTree ));
 	displayJSON( parseTree );
 };
 

@@ -10,7 +10,6 @@ class XMLJSONVisitor{
 
   execute( thingToEvaluate )
   {
-        console.log("calling execute on " + thingToEvaluate.type );
         var ob = {};
         ob.name = thingToEvaluate.type;
         ob.value = this.getValue( thingToEvaluate ).trim();
@@ -24,15 +23,12 @@ class XMLJSONVisitor{
             case "XMLNODES":
                 ob.name = "nodelist";
                 ob.children = [];
-                console.log("In XMLNODES execute, before we do it, its children are " + ob.children.length );
-                console.log("and symbolsMatched.length is " + symbolsMatched.length );
                 for( var i = 0; i < symbolsMatched.length; i++ )
                 {
                   let executedSymbol = this.execute( symbolsMatched[ i ]);
-                  console.log("executedSymbol is " + executedSymbol );
                   ob.children.push( executedSymbol );
                 }
-                console.log("In XMLNODES execute, after we do it, its children are " + ob.children.length );
+                return ob.children;
                 break;
 
             case "XMLNODE":
@@ -52,7 +48,18 @@ class XMLJSONVisitor{
 
                 for( var i = 1; i < symbolsMatched.length - 1; i++ ) // -1, because the last match will be a closetag, which is irrelevant
                 {
-                  ob.children.push( this.execute( symbolsMatched[ i ]) );
+                  let child = this.execute( symbolsMatched[ i ]);
+                  // if a child was a nodelist, then it will return an array of divs.
+                  // we should not push that array as an element onto our array!
+                  // we should concat all its children onto our children (if we have any)
+                  if( Array.isArray( child ) )
+                  {
+                      ob.children = ob.children.concat( child );
+                  }
+                  else
+                  {
+                      ob.children.push( child );
+                  }
                 }
 
 
@@ -114,12 +121,9 @@ class XMLJSONVisitor{
       // or could be <, IDENT, IDENT, =, ', WILDCARD, '
       // or could be <, IDENT, IDENT, =, ', IDENT, '
       // or could be <, IDENT, IDENT, =, ', IDENT, IDENT, '
-      console.log("In getAttributes, childOfXMLNode.symbolsMatched.length is " + childOfXMLNode.symbolsMatched.length );
-      console.log("And childOfXMLNode.symbolsMatched[0].type is " + childOfXMLNode.symbolsMatched[0].type );
       let atts = {};
       if( childOfXMLNode.symbolsMatched[0].constructor.name == "Token" ) // could only be "<"
       {
-        console.log("name is " + this.getValue( childOfXMLNode.symbolsMatched[2] ) );
         let name = this.getValue( childOfXMLNode.symbolsMatched[2] );
         let valueForName = "";
         for( let attributeValueIndex = 5; attributeValueIndex < childOfXMLNode.symbolsMatched.length - 1; attributeValueIndex++ )
@@ -149,9 +153,6 @@ class XMLJSONVisitor{
   }
 
   getValue( nonterminalOrToken ){
-
-    console.log("calling getValue on " + nonterminalOrToken.type );
-
     if(nonterminalOrToken.constructor.name == "Nonterminal" )
     {
         let symbolsMatched = nonterminalOrToken.symbolsMatched;
@@ -202,11 +203,9 @@ class XMLJSONVisitor{
 
         if( nonterminalOrToken.type == "NODETEXT")
         {
-          console.log("Looking into NODETEXT, whose symbolsmatched has length " + nonterminalOrToken.symbolsMatched.length );
           let contentstring = "";
           for(var kid of nonterminalOrToken.symbolsMatched )
           {
-            console.log("kid.type is " + kid.type + " with value " + this.getValue( kid ) );
             if( ( kid.type == "NODETEXT" )  || ( kid.type == "IDENT" )  )
               // IDENT generally means it was preceded and/or followed by some kind of whitespace
               // so we should restore that delimiter
