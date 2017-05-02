@@ -1428,10 +1428,10 @@ window.onload = function () {
                 var _IGNORE2 = true;
 
                 var _tokenDefinitions2 = [[/\s+/, "", _IGNORE2], [/<!--/, 'OPENCOMMENT'], [/-->/, 'CLOSECOMMENT'], [/\//, "/"], [/>/, ">"], [/</, "<"], [/=/, "="], [/"/, '"'], [/'/, '"'], [/[-+]?[0-9]*\.?[0-9]+/, "NUM_LIT"], [/[a-zA-Z]+[a-zA-Z0-9-]*/, "IDENT"],
-                // having trapped all these things,
+                // having trapped all these things, what's left is nodetext
                 [/[^<]+/, "NODETEXT"]];
 
-                makeEvaluatorAndInitialize(new _xmlius2.default(_tokenDefinitions2, _grammarObject), '<div class="hintwrapper"><div class="hint">Click operators to expand or collapse. Click leaf nodes to toggle true/false.</div><div class="styled-select green semi-square"></div></div>');
+                makeEvaluatorAndInitialize(new _xmlius2.default(_tokenDefinitions2, _grammarObject), '<div class="hintwrapper"><div class="hint">Click operators to expand or collapse. Click leaf nodes to toggle true/false.</div><div class="styled-select green semi-square" style="bold"></div></div>');
             }
         }
     }
