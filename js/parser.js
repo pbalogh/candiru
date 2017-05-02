@@ -127,6 +127,8 @@ export default class Parser{
           let stringAndPosition = this.getLastTokenDescriptionOfSymbol( sentenceOfSymbols[0] );
           let errorString = "\nSyntax error:" + stringAndPosition.string + " at position " + stringAndPosition.position;
           console.log("sentenceOfSymbols is " + sentenceOfSymbols);
+          console.log("its length is " + sentenceOfSymbols.length );
+          console.log("sentenceOfSymbols[1] is " + sentenceOfSymbols[1] );
           throw new Error( errorString );
           finished = true;
         }

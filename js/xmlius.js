@@ -15,7 +15,7 @@ export default class XMLius{
     // we set the state so that the parser knows the data type of each of these variables
     // (in this case, boolean)
     // and later so that the visitor can evaluate each node to determine if it is true or false.
-    this.state = {"a":false,"b":true,"c":false,"d":true,"e":false,"f":true,"g":false,"h":true,"i":false};
+    this.state = {};
 
     this.xmlParseTimeVisitor = new XMLParseTimeVisitor();
 
@@ -27,10 +27,14 @@ export default class XMLius{
   }
 
   parse( sentenceToParse ){
+    console.error("XMLius parse " + sentenceToParse );
     try
     {
       let sentenceOfTokens = this.lexer.tokenize( sentenceToParse );
+      this.parser.setState( this.state );
+      console.log("XML sentenceOfTokens is " + sentenceOfTokens );
       this.parseTree = this.parser.parse( sentenceOfTokens, this.xmlParseTimeVisitor );
+      console.log("XML parseTree is " + this.parseTree );
       return this.evaluateParseTree();
     }
     catch( e )

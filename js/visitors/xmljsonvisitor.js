@@ -10,18 +10,34 @@ class XMLJSONVisitor{
 
   execute( thingToEvaluate )
   {
+        console.log("calling execute on " + thingToEvaluate.type );
         var ob = {};
         ob.name = thingToEvaluate.type;
-        ob.value = this.getValue( thingToEvaluate );
+        ob.value = this.getValue( thingToEvaluate ).trim();
         let symbolsMatched = thingToEvaluate.symbolsMatched;
-
         switch( thingToEvaluate.type )
         {
 
             case "TOKEN":
                 return { name : thingToEvaluate.stringIActuallyMatched, value: this.getValue( thingToEvaluate ), condition: "Condition Text Goes Here" };
+
+            case "XMLNODES":
+                ob.name = "nodelist";
+                ob.children = [];
+                console.log("In XMLNODES execute, before we do it, its children are " + ob.children.length );
+                console.log("and symbolsMatched.length is " + symbolsMatched.length );
+                for( var i = 0; i < symbolsMatched.length; i++ )
+                {
+                  let executedSymbol = this.execute( symbolsMatched[ i ]);
+                  console.log("executedSymbol is " + executedSymbol );
+                  ob.children.push( executedSymbol );
+                }
+                console.log("In XMLNODES execute, after we do it, its children are " + ob.children.length );
+                break;
+
             case "XMLNODE":
 
+                this.parentnode = ob;
                 ob.children = [];
                 // opentag is first item, and that gives us our name
                 ob.name = this.getValue( symbolsMatched[ 0 ] );
@@ -95,16 +111,27 @@ class XMLJSONVisitor{
     if( childOfXMLNode.type == "OPENTAGSTART" )
     {
       // could be nested
-      // or could just be <, IDENT, IDENT, =, ', WILDCARD, '
+      // or could be <, IDENT, IDENT, =, ', WILDCARD, '
+      // or could be <, IDENT, IDENT, =, ', IDENT, '
+      // or could be <, IDENT, IDENT, =, ', IDENT, IDENT, '
+      console.log("In getAttributes, childOfXMLNode.symbolsMatched.length is " + childOfXMLNode.symbolsMatched.length );
+      console.log("And childOfXMLNode.symbolsMatched[0].type is " + childOfXMLNode.symbolsMatched[0].type );
       let atts = {};
       if( childOfXMLNode.symbolsMatched[0].constructor.name == "Token" ) // could only be "<"
       {
+        console.log("name is " + this.getValue( childOfXMLNode.symbolsMatched[2] ) );
         let name = this.getValue( childOfXMLNode.symbolsMatched[2] );
-        let val = this.getValue( childOfXMLNode.symbolsMatched[5] );
-        atts[ name ] = val;
+        let valueForName = "";
+        for( let attributeValueIndex = 5; attributeValueIndex < childOfXMLNode.symbolsMatched.length - 1; attributeValueIndex++ )
+        {
+          valueForName += this.getValue( childOfXMLNode.symbolsMatched[ attributeValueIndex ] );
+          let notLast = attributeValueIndex < childOfXMLNode.symbolsMatched.length - 2;
+          if( notLast ) valueForName += " ";
+        }
+        atts[ name ] = valueForName;
         return atts;
       }
-      else if(childOfXMLNode.symbolsMatched[0].type == "OPENTAGSTART")
+      else if(childOfXMLNode.symbolsMatched[0].type == "OPENTAGSTART") // nested opentagstarts! multiple attributes
       {
         atts = this.getAttributes( childOfXMLNode.symbolsMatched[0] );
         let name = this.getValue( childOfXMLNode.symbolsMatched[1] );
@@ -123,6 +150,8 @@ class XMLJSONVisitor{
 
   getValue( nonterminalOrToken ){
 
+    console.log("calling getValue on " + nonterminalOrToken.type );
+
     if(nonterminalOrToken.constructor.name == "Nonterminal" )
     {
         let symbolsMatched = nonterminalOrToken.symbolsMatched;
@@ -133,6 +162,12 @@ class XMLJSONVisitor{
         {
           // our first child will be our opentag, which is where our name comes from.
           let returnVal = this.getValue( symbolsMatched[0] );
+          return returnVal;
+        }
+
+        if( nonterminalOrToken.type == "XMLNODES")
+        {
+          let returnVal = "NODELIST";
           return returnVal;
         }
 
@@ -167,11 +202,22 @@ class XMLJSONVisitor{
 
         if( nonterminalOrToken.type == "NODETEXT")
         {
+          console.log("Looking into NODETEXT, whose symbolsmatched has length " + nonterminalOrToken.symbolsMatched.length );
           let contentstring = "";
           for(var kid of nonterminalOrToken.symbolsMatched )
           {
+            console.log("kid.type is " + kid.type + " with value " + this.getValue( kid ) );
             if( ( kid.type == "NODETEXT" )  || ( kid.type == "IDENT" )  )
-              contentstring += this.getValue( kid );
+              // IDENT generally means it was preceded and/or followed by some kind of whitespace
+              // so we should restore that delimiter
+              if( kid.type == "IDENT" )
+              {
+                contentstring += " " + this.getValue( kid );
+              }
+              else
+              {
+                contentstring += this.getValue( kid );
+              }
           }
           return contentstring;
         }

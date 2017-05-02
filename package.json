@@ -11,7 +11,7 @@
       ]
     },
     "test": "mocha --compilers js:babel-core/register test/*Spec.js",
-    "watch": "onchange 'js/**.js' -- npm run webpack",
+    "watch": "onchange 'js/**.js' 'js/**/**.js' -- npm run webpack",
     "start": "http-server"
   },
   "author": "",

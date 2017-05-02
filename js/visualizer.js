@@ -89,8 +89,11 @@ window.onload = function(){
             // is boolius already loaded?
             if(  !evaluator || evaluator.constructor.name != "XMLius" )
             {
-                                var grammarObject = [
+                let grammarObject = [
                     [  ["OPENCOMMENT", "WILDCARD", "CLOSECOMMENT" ], "COMMENT" ],
+                    // comments will be engulfed by the text of a node
+                    // and ignored when the node is asked for its text as a string
+                    [  ["COMMENT"], "NODETEXT" ],
                     [  ["<", "/", "IDENT", ">" ], "CLOSETAG" ],
                     [  ["<", "IDENT", ">" ], "OPENTAG" ],
                     [  ["<", "IDENT", "/", ">" ], "XMLNODE" ],
@@ -98,8 +101,21 @@ window.onload = function(){
                     /* Some recursive self-nesting here */
                     [  ["OPENTAGSTART", "IDENT", "=", "\"", "WILDCARD", "\"" ], "OPENTAGSTART" ],
                     [  ["OPENTAGSTART", ">"], "OPENTAG" ],
+                    // can't have two identifiers in a row, unless we're between an opening and closing tag
+                    // a/k/a node.text
+                    [  ["IDENT", "IDENT" ], "NODETEXT" ],
+                    [  ["IDENT", "NODETEXT" ], "NODETEXT" ],
+                    [  ["NODETEXT", "NODETEXT" ], "NODETEXT" ],
+                    // let's also have nested nodes engulfed in the NODETEXT
+                    [  ["XMLNODE", "NODETEXT" ], "NODETEXT" ],
+                    [  ["XMLNODES", "NODETEXT" ], "NODETEXT" ],
+                    [  ["NODETEXT", "XMLNODE" ], "NODETEXT" ],
+                    [  ["NODETEXT", "XMLNODES" ], "NODETEXT" ],
                     [  ["OPENTAG", "CLOSETAG" ], "XMLNODE" ],
-                    [  ["OPENTAG", "WILDCARD", "CLOSETAG" ], "XMLNODE" ]
+                    [  ["OPENTAG", "NODETEXT", "CLOSETAG" ], "XMLNODE" ],
+                    [  ["OPENTAG", "XMLNODE", "CLOSETAG" ], "XMLNODE" ],
+                    [  ["XMLNODE", "XMLNODE" ], "XMLNODES" ],
+                    [  ["OPENTAG", "XMLNODES", "CLOSETAG" ], "XMLNODE" ]
                 ];
 
                 let IGNORE = true;
@@ -115,12 +131,13 @@ window.onload = function(){
                     [  /"/, '"' ],
                     [  /'/, '"' ],
                     [  /[-+]?[0-9]*\.?[0-9]+/, "NUM_LIT" ],
-                    [  /[a-zA-Z]+/, "IDENT" ],
-                    [ /[^<]+/, "DIRTYTEXT"]
+                    [  /[a-zA-Z]+[a-zA-Z0-9-]*/, "IDENT" ],
+                    // having trapped all these things,
+                    [ /[^<]+/, "NODETEXT"]
                 ];
+
                 makeEvaluatorAndInitialize( new XMLius( tokenDefinitions, grammarObject ),
-                "<top foo='bar'>Hello!<simpleChildNode></simpleChildNode>There!<complexNode><simpleChildNode></simpleChildNode><simpleChildNode></simpleChildNode></complexNode></top>",
-                "Click nodes to expand or collapse. Click nodes to see attributes and/or content." );
+                `<div class="hintwrapper"><div class="hint">Click operators to expand or collapse. Click leaf nodes to toggle true/false.</div><div class="styled-select green semi-square"></div></div>`);
             }
         }
     }
@@ -190,6 +207,7 @@ function evaluateStatement()
 {
     var statement = d3.select("#statement").node().value;
 	parseTree = evaluator.parse( statement );
+    console.log("parseTree is " + JSON.stringify( parseTree ));
 	displayJSON( parseTree );
 };
 
@@ -238,7 +256,16 @@ function toggle(d, showOverlay) {
             d._children = null;
         }
 
-        if( ! d.children && !d._children) // it's a leaf
+        var hasNoChildren = !d.children && !d._children;
+        if( !hasNoChildren )
+        {
+            // has an array in d.children or d._children
+            // but it might be empty!
+
+            if ( d.children && d.children.length == 0 ) hasNoChildren = true;
+            if ( d._children && d._children.length == 0 ) hasNoChildren = true;
+        }
+        if( hasNoChildren ) // it's a leaf
         {
             // toggle true/false
             if( ( d.value === true ) || (d.value === false ) )
@@ -351,7 +378,15 @@ function update(source) {
   var nodeEnter = node.enter().append("svg:g")
       .attr("class", "node")
       .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-      .on("click", function(d) { toggle(d, true ); update(d); });
+      .on("click", function(d) { toggle(d, true ); update(d); })
+      .on("mouseover", function(d){
+            var attributeText = d.attributes ? JSON.stringify( d.attributes ) : "";
+            if( attributeText.length > 0 )
+            {
+                showValueOverlay( "Attributes: " + attributeText + "</br>Content: " + d.value );
+            }
+
+      });
 
   nodeEnter.append("svg:circle")
       .attr("r", 1e-6)

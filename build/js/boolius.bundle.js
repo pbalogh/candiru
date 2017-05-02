@@ -512,6 +512,8 @@ var Parser = function () {
           var stringAndPosition = this.getLastTokenDescriptionOfSymbol(sentenceOfSymbols[0]);
           var errorString = "\nSyntax error:" + stringAndPosition.string + " at position " + stringAndPosition.position;
           console.log("sentenceOfSymbols is " + sentenceOfSymbols);
+          console.log("its length is " + sentenceOfSymbols.length);
+          console.log("sentenceOfSymbols[1] is " + sentenceOfSymbols[1]);
           throw new Error(errorString);
           finished = true;
         }
@@ -1311,7 +1313,7 @@ var XMLius = function () {
     // we set the state so that the parser knows the data type of each of these variables
     // (in this case, boolean)
     // and later so that the visitor can evaluate each node to determine if it is true or false.
-    this.state = { "a": false, "b": true, "c": false, "d": true, "e": false, "f": true, "g": false, "h": true, "i": false };
+    this.state = {};
 
     this.xmlParseTimeVisitor = new _xmlparsetimevisitor2.default();
 
@@ -1325,9 +1327,13 @@ var XMLius = function () {
   _createClass(XMLius, [{
     key: 'parse',
     value: function parse(sentenceToParse) {
+      console.error("XMLius parse " + sentenceToParse);
       try {
         var sentenceOfTokens = this.lexer.tokenize(sentenceToParse);
+        this.parser.setState(this.state);
+        console.log("XML sentenceOfTokens is " + sentenceOfTokens);
         this.parseTree = this.parser.parse(sentenceOfTokens, this.xmlParseTimeVisitor);
+        console.log("XML parseTree is " + this.parseTree);
         return this.evaluateParseTree();
       } catch (e) {
         console.error("ERROR PARSING OR EVALUATING:" + e);
@@ -1407,14 +1413,25 @@ window.onload = function () {
             // the user wants to look at boolean expressions.
             // is boolius already loaded?
             if (!evaluator || evaluator.constructor.name != "XMLius") {
-                var grammarObject = [[["OPENCOMMENT", "WILDCARD", "CLOSECOMMENT"], "COMMENT"], [["<", "/", "IDENT", ">"], "CLOSETAG"], [["<", "IDENT", ">"], "OPENTAG"], [["<", "IDENT", "/", ">"], "XMLNODE"], [["<", "IDENT", "IDENT", "=", "\"", "WILDCARD", "\""], "OPENTAGSTART"],
+                var _grammarObject = [[["OPENCOMMENT", "WILDCARD", "CLOSECOMMENT"], "COMMENT"],
+                // comments will be engulfed by the text of a node
+                // and ignored when the node is asked for its text as a string
+                [["COMMENT"], "NODETEXT"], [["<", "/", "IDENT", ">"], "CLOSETAG"], [["<", "IDENT", ">"], "OPENTAG"], [["<", "IDENT", "/", ">"], "XMLNODE"], [["<", "IDENT", "IDENT", "=", "\"", "WILDCARD", "\""], "OPENTAGSTART"],
                 /* Some recursive self-nesting here */
-                [["OPENTAGSTART", "IDENT", "=", "\"", "WILDCARD", "\""], "OPENTAGSTART"], [["OPENTAGSTART", ">"], "OPENTAG"], [["OPENTAG", "CLOSETAG"], "XMLNODE"], [["OPENTAG", "WILDCARD", "CLOSETAG"], "XMLNODE"]];
+                [["OPENTAGSTART", "IDENT", "=", "\"", "WILDCARD", "\""], "OPENTAGSTART"], [["OPENTAGSTART", ">"], "OPENTAG"],
+                // can't have two identifiers in a row, unless we're between an opening and closing tag
+                // a/k/a node.text
+                [["IDENT", "IDENT"], "NODETEXT"], [["IDENT", "NODETEXT"], "NODETEXT"], [["NODETEXT", "NODETEXT"], "NODETEXT"],
+                // let's also have nested nodes engulfed in the NODETEXT
+                [["XMLNODE", "NODETEXT"], "NODETEXT"], [["XMLNODES", "NODETEXT"], "NODETEXT"], [["NODETEXT", "XMLNODE"], "NODETEXT"], [["NODETEXT", "XMLNODES"], "NODETEXT"], [["OPENTAG", "CLOSETAG"], "XMLNODE"], [["OPENTAG", "NODETEXT", "CLOSETAG"], "XMLNODE"], [["OPENTAG", "XMLNODE", "CLOSETAG"], "XMLNODE"], [["XMLNODE", "XMLNODE"], "XMLNODES"], [["OPENTAG", "XMLNODES", "CLOSETAG"], "XMLNODE"]];
 
                 var _IGNORE2 = true;
 
-                var _tokenDefinitions2 = [[/\s+/, "", _IGNORE2], [/<!--/, 'OPENCOMMENT'], [/-->/, 'CLOSECOMMENT'], [/\//, "/"], [/>/, ">"], [/</, "<"], [/=/, "="], [/"/, '"'], [/'/, '"'], [/[-+]?[0-9]*\.?[0-9]+/, "NUM_LIT"], [/[a-zA-Z]+/, "IDENT"], [/[^<]+/, "DIRTYTEXT"]];
-                makeEvaluatorAndInitialize(new _xmlius2.default(_tokenDefinitions2, grammarObject), "<top foo='bar'>Hello!<simpleChildNode></simpleChildNode>There!<complexNode><simpleChildNode></simpleChildNode><simpleChildNode></simpleChildNode></complexNode></top>", "Click nodes to expand or collapse. Click nodes to see attributes and/or content.");
+                var _tokenDefinitions2 = [[/\s+/, "", _IGNORE2], [/<!--/, 'OPENCOMMENT'], [/-->/, 'CLOSECOMMENT'], [/\//, "/"], [/>/, ">"], [/</, "<"], [/=/, "="], [/"/, '"'], [/'/, '"'], [/[-+]?[0-9]*\.?[0-9]+/, "NUM_LIT"], [/[a-zA-Z]+[a-zA-Z0-9-]*/, "IDENT"],
+                // having trapped all these things,
+                [/[^<]+/, "NODETEXT"]];
+
+                makeEvaluatorAndInitialize(new _xmlius2.default(_tokenDefinitions2, _grammarObject), '<div class="hintwrapper"><div class="hint">Click operators to expand or collapse. Click leaf nodes to toggle true/false.</div><div class="styled-select green semi-square"></div></div>');
             }
         }
     }
@@ -1468,6 +1485,7 @@ window.onload = function () {
     function evaluateStatement() {
         var statement = d3.select("#statement").node().value;
         parseTree = evaluator.parse(statement);
+        console.log("parseTree is " + JSON.stringify(parseTree));
         displayJSON(parseTree);
     };
 
@@ -1513,7 +1531,15 @@ window.onload = function () {
                 d._children = null;
             }
 
-            if (!d.children && !d._children) // it's a leaf
+            var hasNoChildren = !d.children && !d._children;
+            if (!hasNoChildren) {
+                // has an array in d.children or d._children
+                // but it might be empty!
+
+                if (d.children && d.children.length == 0) hasNoChildren = true;
+                if (d._children && d._children.length == 0) hasNoChildren = true;
+            }
+            if (hasNoChildren) // it's a leaf
                 {
                     // toggle true/false
                     if (d.value === true || d.value === false) {
@@ -1611,6 +1637,11 @@ window.onload = function () {
             return "translate(" + source.y0 + "," + source.x0 + ")";
         }).on("click", function (d) {
             toggle(d, true);update(d);
+        }).on("mouseover", function (d) {
+            var attributeText = d.attributes ? JSON.stringify(d.attributes) : "";
+            if (attributeText.length > 0) {
+                showValueOverlay("Attributes: " + attributeText + "</br>Content: " + d.value);
+            }
         });
 
         nodeEnter.append("svg:circle").attr("r", 1e-6).style("stroke", function (d) {
@@ -2069,17 +2100,32 @@ var XMLJSONVisitor = function () {
   }, {
     key: "execute",
     value: function execute(thingToEvaluate) {
+      console.log("calling execute on " + thingToEvaluate.type);
       var ob = {};
       ob.name = thingToEvaluate.type;
-      ob.value = this.getValue(thingToEvaluate);
+      ob.value = this.getValue(thingToEvaluate).trim();
       var symbolsMatched = thingToEvaluate.symbolsMatched;
-
       switch (thingToEvaluate.type) {
 
         case "TOKEN":
           return { name: thingToEvaluate.stringIActuallyMatched, value: this.getValue(thingToEvaluate), condition: "Condition Text Goes Here" };
+
+        case "XMLNODES":
+          ob.name = "nodelist";
+          ob.children = [];
+          console.log("In XMLNODES execute, before we do it, its children are " + ob.children.length);
+          console.log("and symbolsMatched.length is " + symbolsMatched.length);
+          for (var i = 0; i < symbolsMatched.length; i++) {
+            var executedSymbol = this.execute(symbolsMatched[i]);
+            console.log("executedSymbol is " + executedSymbol);
+            ob.children.push(executedSymbol);
+          }
+          console.log("In XMLNODES execute, after we do it, its children are " + ob.children.length);
+          break;
+
         case "XMLNODE":
 
+          this.parentnode = ob;
           ob.children = [];
           // opentag is first item, and that gives us our name
           ob.name = this.getValue(symbolsMatched[0]);
@@ -2173,21 +2219,32 @@ var XMLJSONVisitor = function () {
 
       if (childOfXMLNode.type == "OPENTAGSTART") {
         // could be nested
-        // or could just be <, IDENT, IDENT, =, ', WILDCARD, '
+        // or could be <, IDENT, IDENT, =, ', WILDCARD, '
+        // or could be <, IDENT, IDENT, =, ', IDENT, '
+        // or could be <, IDENT, IDENT, =, ', IDENT, IDENT, '
+        console.log("In getAttributes, childOfXMLNode.symbolsMatched.length is " + childOfXMLNode.symbolsMatched.length);
+        console.log("And childOfXMLNode.symbolsMatched[0].type is " + childOfXMLNode.symbolsMatched[0].type);
         var atts = {};
         if (childOfXMLNode.symbolsMatched[0].constructor.name == "Token") // could only be "<"
           {
+            console.log("name is " + this.getValue(childOfXMLNode.symbolsMatched[2]));
             var name = this.getValue(childOfXMLNode.symbolsMatched[2]);
-            var val = this.getValue(childOfXMLNode.symbolsMatched[5]);
-            atts[name] = val;
+            var valueForName = "";
+            for (var attributeValueIndex = 5; attributeValueIndex < childOfXMLNode.symbolsMatched.length - 1; attributeValueIndex++) {
+              valueForName += this.getValue(childOfXMLNode.symbolsMatched[attributeValueIndex]);
+              var notLast = attributeValueIndex < childOfXMLNode.symbolsMatched.length - 2;
+              if (notLast) valueForName += " ";
+            }
+            atts[name] = valueForName;
             return atts;
-          } else if (childOfXMLNode.symbolsMatched[0].type == "OPENTAGSTART") {
-          atts = this.getAttributes(childOfXMLNode.symbolsMatched[0]);
-          var _name = this.getValue(childOfXMLNode.symbolsMatched[1]);
-          var _val = this.getValue(childOfXMLNode.symbolsMatched[4]);
-          atts[_name] = _val;
-          return atts;
-        }
+          } else if (childOfXMLNode.symbolsMatched[0].type == "OPENTAGSTART") // nested opentagstarts! multiple attributes
+          {
+            atts = this.getAttributes(childOfXMLNode.symbolsMatched[0]);
+            var _name = this.getValue(childOfXMLNode.symbolsMatched[1]);
+            var val = this.getValue(childOfXMLNode.symbolsMatched[4]);
+            atts[_name] = val;
+            return atts;
+          }
       } else if (childOfXMLNode.symbolsMatched[0].type == "OPENTAGSTART") {
         var returnAtts = this.getAttributes(childOfXMLNode.symbolsMatched[0]);
         return returnAtts;
@@ -2198,6 +2255,8 @@ var XMLJSONVisitor = function () {
     key: "getValue",
     value: function getValue(nonterminalOrToken) {
 
+      console.log("calling getValue on " + nonterminalOrToken.type);
+
       if (nonterminalOrToken.constructor.name == "Nonterminal") {
         var symbolsMatched = nonterminalOrToken.symbolsMatched;
 
@@ -2207,6 +2266,11 @@ var XMLJSONVisitor = function () {
           // our first child will be our opentag, which is where our name comes from.
           var _returnVal = this.getValue(symbolsMatched[0]);
           return _returnVal;
+        }
+
+        if (nonterminalOrToken.type == "XMLNODES") {
+          var _returnVal2 = "NODELIST";
+          return _returnVal2;
         }
 
         if (nonterminalOrToken.type == "OPENTAG" || nonterminalOrToken.type == "OPENTAGSTART") {
@@ -2256,6 +2320,7 @@ var XMLJSONVisitor = function () {
         }
 
         if (nonterminalOrToken.type == "NODETEXT") {
+          console.log("Looking into NODETEXT, whose symbolsmatched has length " + nonterminalOrToken.symbolsMatched.length);
           var contentstring = "";
           var _iteratorNormalCompletion3 = true;
           var _didIteratorError3 = false;
@@ -2265,7 +2330,15 @@ var XMLJSONVisitor = function () {
             for (var _iterator3 = nonterminalOrToken.symbolsMatched[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
               var kid = _step3.value;
 
-              if (kid.type == "NODETEXT" || kid.type == "IDENT") contentstring += this.getValue(kid);
+              console.log("kid.type is " + kid.type + " with value " + this.getValue(kid));
+              if (kid.type == "NODETEXT" || kid.type == "IDENT")
+                // IDENT generally means it was preceded and/or followed by some kind of whitespace
+                // so we should restore that delimiter
+                if (kid.type == "IDENT") {
+                  contentstring += " " + this.getValue(kid);
+                } else {
+                  contentstring += this.getValue(kid);
+                }
             }
           } catch (err) {
             _didIteratorError3 = true;
