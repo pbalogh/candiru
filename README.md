@@ -3,7 +3,7 @@ A bottom-up deterministic parser with lookahead of 1 (so far). Written in ES6 us
 
 Live demo is [here](https://pbalogh.github.io/candiru/).
 
-node-modules isn't committed, of course, so 'npm install' to get things going.
+node_modules isn't committed, of course, so 'npm install' to get things going.
 
 ```npm test``` to run the mocha tests, ```npm run watch``` to have it watch for changes to code and use webpack rebuild the bundle.
 
