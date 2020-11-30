@@ -1,5 +1,6 @@
+import Nonterminal from "../nonterminal";
 
-class MathJSONVisitor{
+export default class MathJSONVisitor{
   constructor( state ){
     this.state = state;
   }
@@ -61,7 +62,7 @@ class MathJSONVisitor{
   }
 
   getValue( nonterminalOrToken ){
-    if(nonterminalOrToken.constructor.name == "Nonterminal" )
+    if(nonterminalOrToken instanceof Nonterminal)
     {
         let symbolsMatched = nonterminalOrToken.seriesOfSymbolsIAbsorbedAndReplaced;
         let value = "FOO"; // declare this and, hey, initialize it with something we'll notice if there's an error.
@@ -141,5 +142,3 @@ class MathJSONVisitor{
     if( operatorSymbol == "!" ) return "NOT";
   }
 }
-
-module.exports = MathJSONVisitor;

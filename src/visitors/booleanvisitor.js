@@ -1,6 +1,6 @@
-import EvaluationVisitor from './evaluationvisitor';
+import Nonterminal from "../nonterminal";
 
-class BooleanVisitor{
+export default class BooleanVisitor{
   constructor( state ){
     this.state = state;
   }
@@ -9,7 +9,7 @@ class BooleanVisitor{
   }
 
   execute( nonterminalOrToken ){
-    if(nonterminalOrToken.constructor.name == "Nonterminal" )
+    if(nonterminalOrToken instanceof Nonterminal)
     {
         let symbolsMatched = nonterminalOrToken.seriesOfSymbolsIAbsorbedAndReplaced;
         let value = "FOO"; // declare this and, hey, initialize it with something we'll notice if there's an error.
@@ -72,5 +72,3 @@ class BooleanVisitor{
       }
   }
 }
-
-module.exports = BooleanVisitor;

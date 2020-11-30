@@ -14,10 +14,10 @@ export default class Token extends Symbol{
    * (a string).
    *
    */
-  constructor( regexOfThingsIMustMatch, type, leng, stringIActuallyMatched, ignore, startIndex = -1 ){
+  constructor( regexOfThingsIMustMatch, givenType, leng, stringIActuallyMatched, ignore, startIndex = -1 ){
     super();
     this.regexOfThingsIMustMatch = regexOfThingsIMustMatch;
-    this._type = type;
+    this._type = givenType;
     this.start = startIndex;
     this._length = leng ? leng : 0;
     this._stringIMatched = stringIActuallyMatched;
@@ -44,6 +44,7 @@ export default class Token extends Symbol{
       this._length = 0;
       let match = this.regexOfThingsIMustMatch.exec( stringToMatch );
       if( match != null && match.index == 0 ){
+
         this._length = match[0].length;
         // a frozen clone to record this moment,
         // so that our data can go on to be reused without breaking things

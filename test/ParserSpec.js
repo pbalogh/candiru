@@ -1,12 +1,12 @@
-import Nonterminal from '../js/nonterminal';
-import Parser from '../js/parser';
-import Token from '../js/token';
-import Lexer from '../js/lexer';
-import TokenFactory from '../js/factories/tokenfactory';
-import NonterminalFactory from '../js/factories/nonterminalfactory';
-import EvaluationVisitor from '../js/visitors/evaluationvisitor';
-import XMLParseTimeVisitor from '../js/visitors/xmlparsetimevisitor';
-import XMLJSONVisitor from '../js/visitors/xmljsonvisitor';
+import Nonterminal from '../src/nonterminal';
+import Parser from '../src/parser';
+import Token from '../src/token';
+import Lexer from '../src/lexer';
+import Nonterminal from "../nonterminal";
+import NonterminalFactory from '../src/factories/nonterminalfactory';
+import EvaluationVisitor from '../src/visitors/evaluationvisitor';
+import XMLParseTimeVisitor from '../src/visitors/xmlparsetimevisitor';
+import XMLJSONVisitor from '../src/visitors/xmljsonvisitor';
 
 
 import booleanTestingStatements from './tests';
@@ -177,9 +177,9 @@ describe('Nonterminal', () => {
       var onlySymbol = arrayOfSymbolsMatchedBeforeMe[ 0 ];
       assert( onlySymbol.seriesOfSymbolsIAbsorbedAndReplaced[0].type == "footoken" );
       assert( onlySymbol.seriesOfSymbolsIAbsorbedAndReplaced[1].type == "bartoken" );
-      assert( onlySymbol.seriesOfSymbolsIAbsorbedAndReplaced[1].constructor.name == "Token" );
+      assert( onlySymbol.seriesOfSymbolsIAbsorbedAndReplaced[1] instanceof Token);
       assert( onlySymbol.seriesOfSymbolsIAbsorbedAndReplaced[2].type == "baz" );
-      assert( onlySymbol.seriesOfSymbolsIAbsorbedAndReplaced[2].constructor.name == "Nonterminal" );
+      assert( onlySymbol.seriesOfSymbolsIAbsorbedAndReplaced[2] instanceof Nonterminal);
       assert( onlySymbol.seriesOfSymbolsIAbsorbedAndReplaced[3].type == "baztoken" );
       assert( sentenceOfSymbols.length == 0, "sentenceOfSymbols should be empty but is " + sentenceOfSymbols.length );
     });
@@ -435,8 +435,7 @@ describe('Parser', () => {
           eval( testStatement );
         }
       }
-      console.log("# of statements parsed: " + booleanTestingStatements.length );
-      console.log("numberOfStatementsEvaluated is " + numberOfStatementsEvaluated );
+
       done()
     });
 
@@ -458,7 +457,7 @@ describe('Parser', () => {
         [  ["OPENCOMMENT", "WILDCARD", "CLOSECOMMENT" ], "COMMENT" ],
         // comments will be engulfed by the text of a node
         // and ignored when the node is asked for its text as a string
-        [  ["COMMENT"], "NODETEXT" ],
+        [  ["COMMENT"], "#TEXT_NODE" ],
         [  ["<", "/", "IDENT", ">" ], "CLOSETAG" ],
         [  ["<", "IDENT", ">" ], "OPENTAG" ],
         [  ["<", "IDENT", "/", ">" ], "XMLNODE" ],
@@ -468,16 +467,16 @@ describe('Parser', () => {
         [  ["OPENTAGSTART", ">"], "OPENTAG" ],
         // can't have two identifiers in a row, unless we're between an opening and closing tag
         // a/k/a node.text
-        [  ["IDENT", "IDENT" ], "NODETEXT" ],
-        [  ["IDENT", "NODETEXT" ], "NODETEXT" ],
-        [  ["NODETEXT", "NODETEXT" ], "NODETEXT" ],
+        [  ["IDENT", "IDENT" ], "#TEXT_NODE" ],
+        [  ["IDENT", "#TEXT_NODE" ], "#TEXT_NODE" ],
+        [  ["#TEXT_NODE", "#TEXT_NODE" ], "#TEXT_NODE" ],
         // let's also have nested nodes engulfed in the NODETEXT
-        [  ["XMLNODE", "NODETEXT" ], "NODETEXT" ],
-        [  ["XMLNODES", "NODETEXT" ], "NODETEXT" ],
-        [  ["NODETEXT", "XMLNODE" ], "NODETEXT" ],
-        [  ["NODETEXT", "XMLNODES" ], "NODETEXT" ],
+        [  ["XMLNODE", "#TEXT_NODE" ], "#TEXT_NODE" ],
+        [  ["XMLNODES", "#TEXT_NODE" ], "#TEXT_NODE" ],
+        [  ["#TEXT_NODE", "XMLNODE" ], "#TEXT_NODE" ],
+        [  ["#TEXT_NODE", "XMLNODES" ], "#TEXT_NODE" ],
         [  ["OPENTAG", "CLOSETAG" ], "XMLNODE" ],
-        [  ["OPENTAG", "NODETEXT", "CLOSETAG" ], "XMLNODE" ],
+        [  ["OPENTAG", "#TEXT_NODE", "CLOSETAG" ], "XMLNODE" ],
         [  ["OPENTAG", "XMLNODE", "CLOSETAG" ], "XMLNODE" ],
         [  ["XMLNODE", "XMLNODE" ], "XMLNODES" ],
         [  ["OPENTAG", "XMLNODES", "CLOSETAG" ], "XMLNODE" ]
@@ -496,7 +495,7 @@ describe('Parser', () => {
         [  /'/, '"' ],
         [  /[-+]?[0-9]*\.?[0-9]+/, "NUM_LIT" ],
         [  /[a-zA-Z]+[a-zA-Z0-9-]*/, "IDENT" ],
-        [ /[^<]+/, "NODETEXT"]
+        [ /[^<]+/, "#TEXT_NODE"]
       ];
       lexer = new Lexer( tokenDefinitions );
       parser = new Parser( grammarObject );

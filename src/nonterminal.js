@@ -43,6 +43,8 @@ export default class Nonterminal extends Symbol{
 
       let sentenceOfSymbolsToMatchClone = sentenceOfSymbolsToMatch.slice(0);
 
+      
+
       // same with ours
 
       let seriesOfSymbolsIMustMatchClone = this.seriesOfSymbolsIMustMatch.slice(0);
@@ -59,15 +61,12 @@ export default class Nonterminal extends Symbol{
       {
         let mySymbol = seriesOfSymbolsIMustMatchClone.shift();
         let theirSymbol = sentenceOfSymbolsToMatchClone.shift();
-
         // if they ran out of symbols, then we're obviously not a match. UNLESS we were in wildcard mode.
         if( ! theirSymbol )
         {
             this.seriesOfSymbolsIAbsorbedAndReplaced = [];
             return [ 0, arrayOfSymbolsMatchedBeforeMe, sentenceOfSymbolsToMatch ];
         }
-
-
 
         if( mySymbol == "WILDCARD" )
         {
@@ -144,6 +143,7 @@ export default class Nonterminal extends Symbol{
       // if we're NUMERIC + NUMERIC, we'll find a match
       // but that is wrong! because the next token *after* our possible match is a *
       // and that has higher precedence than +
+
 
       if( this.lookaheadTokensToAvoid )
       {

@@ -1,5 +1,4 @@
-
-class XMLParseTimeVisitor{
+export default class XMLParseTimeVisitor{
   constructor( state ){
     this.state = state;
   }
@@ -95,7 +94,3 @@ class XMLParseTimeVisitor{
     return thingToEvaluate._stringIMatched;
     }
 }
-
-
-
-module.exports = XMLParseTimeVisitor;

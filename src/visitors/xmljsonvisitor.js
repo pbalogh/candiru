@@ -1,6 +1,7 @@
 import Token from '../token';
+import Nonterminal from "../nonterminal";
 
-class XMLJSONVisitor{
+export default class XMLJSONVisitor{
   constructor( state ){
     this.state = state;
   }
@@ -14,6 +15,7 @@ class XMLJSONVisitor{
         ob.name = thingToEvaluate.type;
         ob.value = this.getValue( thingToEvaluate ).trim();
         let symbolsMatched = thingToEvaluate.symbolsMatched;
+
         switch( thingToEvaluate.type )
         {
 
@@ -37,6 +39,7 @@ class XMLJSONVisitor{
                 ob.children = [];
                 // opentag is first item, and that gives us our name
                 ob.name = this.getValue( symbolsMatched[ 0 ] );
+
                 var optionalAttributes = this.getAttributes( symbolsMatched[ 0 ] );
 
                 if( optionalAttributes )
@@ -76,7 +79,8 @@ class XMLJSONVisitor{
     let symbolChildrenOnly = [];
     let runningStringOfTokenText = "";
     for( var symbol of arrayOfSymbolsThatMightBeTokens ){
-      if( symbol.constructor.name != "Token" )
+
+      if( !(symbol instanceof Token))
       {
         if( runningStringOfTokenText.length > 0 ) // we've been building up a text string!
         {
@@ -92,9 +96,7 @@ class XMLJSONVisitor{
       }
       else // it's a token!
       {
-
          runningStringOfTokenText += symbol._stringIMatched;
-
       }
     }
 
@@ -122,7 +124,7 @@ class XMLJSONVisitor{
       // or could be <, IDENT, IDENT, =, ', IDENT, '
       // or could be <, IDENT, IDENT, =, ', IDENT, IDENT, '
       let atts = {};
-      if( childOfXMLNode.symbolsMatched[0].constructor.name == "Token" ) // could only be "<"
+      if( childOfXMLNode.symbolsMatched[0] instanceof Token) // could only be "<"
       {
         let name = this.getValue( childOfXMLNode.symbolsMatched[2] );
         let valueForName = "";
@@ -153,7 +155,7 @@ class XMLJSONVisitor{
   }
 
   getValue( nonterminalOrToken ){
-    if(nonterminalOrToken.constructor.name == "Nonterminal" )
+    if(nonterminalOrToken instanceof Nonterminal)
     {
         let symbolsMatched = nonterminalOrToken.symbolsMatched;
 
@@ -201,12 +203,12 @@ class XMLJSONVisitor{
             return commentstring;
         }
 
-        if( nonterminalOrToken.type == "NODETEXT")
+        if( nonterminalOrToken.type == "#TEXT_NODE")
         {
           let contentstring = "";
           for(var kid of nonterminalOrToken.symbolsMatched )
           {
-            if( ( kid.type == "NODETEXT" )  || ( kid.type == "IDENT" )  )
+            if( ( kid.type == "#TEXT_NODE" )  || ( kid.type == "IDENT" )  )
               // IDENT generally means it was preceded and/or followed by some kind of whitespace
               // so we should restore that delimiter
               if( kid.type == "IDENT" )
@@ -243,5 +245,3 @@ class XMLJSONVisitor{
       }
   }
 }
-
-module.exports = XMLJSONVisitor;

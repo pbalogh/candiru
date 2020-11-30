@@ -1,41 +1,55 @@
 body {
   background: url('texture-noise.png');
-  overflow: hidden;
   margin: 0;
   font-size: 14px;
   font-family: "Helvetica Neue", Helvetica;
 }
 
-#chart, #header, #footer {
-  /*position: absolute;*/
-  top: 0;
+header.main-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-#header, #footer {
-  z-index: 1;
-  padding:4px 0px 0px 14px;
-  /*display: block;*/
+h1 {
   font-size: 36px;
+  font-weight: 500;
+  line-height: 1rem;
+}
+
+h2 {
+  font-size: 24px;
   font-weight: 300;
-  text-shadow: 0 1px 0 #fff;
+  line-height: 3rem;
 }
 
-
-#header.inverted, #footer.inverted {
-  color: #fff;
-  text-shadow: 0 1px 4px #000;
+summary {
+  font-size: 18px;
+  font-weight: 300;
+  line-height: 3rem;
 }
 
-#header {
-  top: 10px;
-  left: 100px;
-  width: 1000px;
+.modal-header {
+  background-color: lightgrey;
 }
 
-#footer {
-  top: 680px;
-  right: 140px;
-  text-align: right;
+#statement {
+  width: 700px;
+  border: 1px dotted #ccc;
+  background: white;
+  font-family: monospace;
+  padding: 10px 20px;
+  font-size: 18px;
+  margin: 30px 0px 0px -10;
+  color: darkslategrey;
+}
+
+button {
+  font-family: monospace;
+  /* padding: 10px 20px; */
+  font-size: 18px;
+  /* margin: 20px 10px 20px 0; */
+  color: darkslategrey;
 }
 
 rect {
@@ -82,43 +96,6 @@ a:hover {
   color: #666;
 }
 
-.hint {
-  /*position: absolute;*/
-  left: -2;
-  position:relative;
-  margin-top:-122px;
-  display: inline-block;
-  font-size: 14px;
-  color: #777;
-  min-width:500px;
-}
-
-.hintwrapper {
-  margin-top:-22;
-  margin-bottom:-22;
-}
-.smaller{
-  font-size: 0.5em;
-}
-
-input  {
-    width:700px;
-    border: 1px dotted #ccc;
-    background: white;
-    font-family: monospace;
-    padding: 10px 20px;
-    font-size: 18px;
-    margin: 30px 0px 0px -10;
-    color: darkslategrey;
-    }
-button {
-    font-family: monospace;
-    padding: 10px 20px;
-    font-size: 18px;
-    margin: 20px 10px 20px 0;
-    color: darkslategrey;
-}
-
 .node circle {
   cursor: pointer;
   fill: #fff;
@@ -136,53 +113,8 @@ path.link {
   stroke-width: 1.5px;
 }
 
-
-/* -------------------- Select Box Styles: bavotasan.com Method (with special adaptations by ericrasch.com) */
-/* -------------------- Source: http://bavotasan.com/2011/style-select-box-using-only-css/ */
-.styled-select {
-   background: url(http://i62.tinypic.com/15xvbd5.png) no-repeat 96% 0;
-   height: 29px;
-   overflow: hidden;
-   width: 290px;
-   margin-left: 40px;
-   display: inline-block;
-   /*float:right;*/
-}
-
-.styled-select select {
-   background: transparent;
-   border: none;
-   font-size: 14px;
-   height: 29px;
-   padding: 5px; /* If you add too much padding here, the options won't show in IE */
-   width: 318px;
-}
-
-
 .semi-square {
-   -webkit-border-radius: 5px;
-   -moz-border-radius: 5px;
-   border-radius: 5px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
 }
-
-/* -------------------- Colors: Background */
-.slate   { background-color: #ddd; }
-.green   { background-color: #779126; }
-.blue    { background-color: #3b8ec2; }
-.yellow  { background-color: #eec111; }
-.black   { background-color: #000; }
-
-/* -------------------- Colors: Text */
-.slate select   { color: #000; }
-.green select   { color: #fff; }
-.blue select    { color: #fff; }
-.yellow select  { color: #000; }
-.black select   { color: #fff; }
-/*
-#testbutton{
-  float:right;
-}
-#statement{
-  clear:both;
-}
-*/

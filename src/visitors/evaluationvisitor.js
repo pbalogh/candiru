@@ -1,7 +1,8 @@
 import BooleanVisitor from './booleanvisitor'
 import NumericVisitor from './numericvisitor'
+import Nonterminal from "../nonterminal";
 
-class EvaluationVisitor{
+export default class EvaluationVisitor{
   constructor( state ){
     this.state = state;
     this.booleanVisitor = new BooleanVisitor( state );
@@ -15,7 +16,7 @@ class EvaluationVisitor{
   }
 
   execute( nonterminalOrToken ) {
-    if(nonterminalOrToken.constructor.name == "Nonterminal" )
+    if(nonterminalOrToken instanceof Nonterminal)
     {
       if( nonterminalOrToken.type == "BOOLEAN")
         return this.booleanVisitor.execute( nonterminalOrToken );
@@ -37,5 +38,3 @@ class EvaluationVisitor{
     }
   }
 }
-
-module.exports = EvaluationVisitor;
