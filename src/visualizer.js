@@ -160,13 +160,12 @@ window.onload = function () {
   }
 
   var evaluator;
-  // var winHeight = Math.max( 600, window.innerHeight );
   var winWidth = Math.max(1000, window.innerWidth);
 
   let header = document.querySelector("header")[0];
-  var winHeight = Math.max(600, window.innerHeight - 240);
+  var winHeight = Math.max(500, window.innerHeight - 240);
 
-  var winWidth = Math.max(1000, window.innerWidth);
+  var winWidth = Math.max(800, window.innerWidth);
 
   var m = [0, 120, 140, 120],
     w = winWidth - m[1] - m[3],
