@@ -1,75 +1,10 @@
 <html>
 <head>
-    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <script src="js/d3.v3.min.js" charset="utf-8"></script>
-    <link type="text/css" rel="stylesheet" href="css/style.css">
-    <script type="text/javascript" src="js/d3.layout.js"></script>
-    <title>Candiru</title>
+    <meta http-equiv="refresh" content="0; url=https://pbalogh.github.io/candiru/build/index.html">
 </head>
-<!-- note that visualizer.js is the entrypoint to everything -->
-<!-- to deploy, git subtree push --prefix build origin gh-pages -->
-<!--
-TODO: create a playground that takes grammar json object, lexer json object, and makes simple tree
-TODO: in README.md, add description of how it works under playground
--->
-<script src="js/boolius.bundle.js"></script>
 
 <body>
-    <div id="body">
-
-      <div id="header">
-        <div>Candiru: <span class="smaller">A Bottom-Up Visitor(-Based Parser)</span></div>
-        <div class="hintwrapper">
-	        <div class="hint">Click operators to expand or collapse. Click leaf nodes to toggle true/false.</div>
-
-            <div class="styled-select green semi-square">
-                <select id="modeSelect">
-                    <option>Evaluate Boolean Expressions</option>
-                    <option>Evaluate XML</option>
-                    <option>Arithmetic Operator Ordering (PEMDAS)</option>
-                </select>
-            </div>
-        </div>
-        <div>
-            <input type="text" id="statement" value='((d && c)) || (!b && a) && (!d || !a) && (!c || !b)'></input>
-            <button id="testbutton">Test</button>
-        </div>
-      </div>
-	</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-<script src="js/bootstrap.min.js"></script>
-
-
-<!-- Modal -->
-<div class="modal fade" id="valueModal" tabindex="-1" role="dialog"
-     aria-labelledby="myModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <!-- Modal Header -->
-            <div class="modal-header">
-                <button type="button" class="close"
-                   data-dismiss="modal">
-                       <span aria-hidden="true">&times;</span>
-                       <span class="sr-only">Close</span>
-                </button>
-                <h4 class="modal-title" id="myModalLabel">
-                    Node Value
-                </h4>
-            </div>
-
-            <!-- Modal Body -->
-            <div class="modal-body">
-                <div id="valueModalText">
-                </div>
-
-
-            </div>
-
-        </div>
-    </div>
-</div>
+    
 
 </body>
 </html>
